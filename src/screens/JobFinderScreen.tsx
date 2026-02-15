@@ -15,12 +15,14 @@ import JobCard from "../components/JobCard";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/props";
 import { Ionicons } from "@expo/vector-icons";
+import ThemeToggle from "../components/ThemeToggle";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Find">;
 
 const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
   const { jobs, loading, error } = useJobs();
-  const { colors } = useTheme();
+  // Destructure isDarkMode and toggleTheme from your context
+  const { colors, isDarkMode, toggleTheme } = useTheme();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -62,10 +64,18 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <View style={styles.headerContainer}>
-            {/* Huge, Editorial Typography */}
-            <Text style={[styles.mainHeader, { color: colors.text }]}>
-              Find work.
-            </Text>
+            {/* Top Row: Header & Theme Toggle */}
+            <View style={styles.topRow}>
+              <Text style={[styles.mainHeader, { color: colors.text }]}>
+                Find work.
+              </Text>
+
+              <ThemeToggle
+                isDarkMode={isDarkMode}
+                color={colors.text}
+                onToggle={toggleTheme}
+              />
+            </View>
 
             {/* Flat, Minimal Search Bar */}
             <View
@@ -184,11 +194,16 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   listContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20 },
   headerContainer: { marginBottom: 16 },
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center", // Aligns the text and icon nicely
+    marginBottom: 24,
+  },
   mainHeader: {
     fontSize: 40,
     fontWeight: "900",
     letterSpacing: -1.5,
-    marginBottom: 24,
   },
   searchBox: {
     flexDirection: "row",

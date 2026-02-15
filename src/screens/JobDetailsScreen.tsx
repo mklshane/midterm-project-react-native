@@ -265,7 +265,7 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           onPress={handleApplyPress}
           style={[styles.applyButton, { backgroundColor: colors.primary }]}
         >
-          <Text style={[styles.applyText, { color: "#FFFFFF" }]}>
+          <Text style={[styles.applyText, { color: colors.background }]}>
             Apply Now
           </Text>
         </TouchableOpacity>
