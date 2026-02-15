@@ -7,45 +7,60 @@ export type ThemeColors = {
   text: string;
   mutedText: string;
   primary: string;
-  primaryText: string;
+  primaryLight: string;
+  secondary: string;
   accent: string;
-  ctaPeach: string;
-  border: string;
   success: string;
   warning: string;
   error: string;
+  border: string;
+  divider: string;
+  shadow: string;
+  highlight: string;
+  gradientStart: string;
+  gradientEnd: string;
 };
 
 export const themeColors: Record<ThemeMode, ThemeColors> = {
   light: {
-    background: "#FAFAF9",
-    surface: "#E7E5E4",
+    background: "#FAFAFA",
+    surface: "#FFFFFF",
     card: "#FFFFFF",
-    text: "#111827",
-    mutedText: "#6B7280",
-    primary: "#F5D0C5",
-    primaryText: "#111827",
-    accent: "#0F766E",
-    ctaPeach: "#f4c3b4",
-    border: "#E7E5E4",
-    success: "#22C55E",
-    warning: "#F97316",
+    text: "#09090B", // Near black
+    mutedText: "#71717A",
+    primary: "#18181B", // Stark black for primary buttons/accents
+    primaryLight: "#F4F4F5",
+    secondary: "#27272A",
+    accent: "#3B82F6", // Keep a blue just for links/special highlights if needed
+    success: "#10B981",
+    warning: "#F59E0B",
     error: "#EF4444",
+    border: "#E4E4E7",
+    divider: "#F4F4F5",
+    shadow: "transparent", // No shadows in this design
+    highlight: "#F4F4F5",
+    gradientStart: "#18181B",
+    gradientEnd: "#18181B",
   },
   dark: {
-    background: "#181818",
-    surface: "#212121",
-    card: "#2f2f2f",
-    text: "#E2E8F0",
-    mutedText: "#9ca6b3",
-    primary: "#38BDF8",
-    primaryText: "#0B1120",
-    accent: "#FBBF24",
-    ctaPeach: "#F5D0C5",
-    border: "#464646",
-    success: "#22C55E",
-    warning: "#FB923C",
-    error: "#F87171",
+    background: "#09090B",
+    surface: "#18181B",
+    card: "#18181B",
+    text: "#FAFAFA",
+    mutedText: "#A1A1AA",
+    primary: "#FAFAFA", // Pure white for primary elements
+    primaryLight: "#27272A",
+    secondary: "#E4E4E7",
+    accent: "#3B82F6",
+    success: "#10B981",
+    warning: "#F59E0B",
+    error: "#EF4444",
+    border: "#27272A",
+    divider: "#27272A",
+    shadow: "transparent",
+    highlight: "#27272A",
+    gradientStart: "#FAFAFA",
+    gradientEnd: "#FAFAFA",
   },
 };
 

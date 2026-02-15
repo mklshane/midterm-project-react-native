@@ -1,20 +1,24 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import "react-native-get-random-values";
+import { ThemeProvider } from "./src/contexts/ThemeContext";
+import React from "react";
+import AppNavigator from "./src/navigation/AppNavigator";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { JobsProvider } from "./src/contexts/JobsContext";
+import { SavedJobsProvider } from "./src/contexts/SavedJobContext";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <JobsProvider>
+          <SavedJobsProvider>
+            <ThemeProvider>
+              <AppNavigator />
+            </ThemeProvider>
+          </SavedJobsProvider>
+        </JobsProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
