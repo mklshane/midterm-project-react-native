@@ -16,7 +16,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/props";
 import { Ionicons } from "@expo/vector-icons";
 
-type Props = NativeStackScreenProps<RootStackParamList, "JobFinder">;
+type Props = NativeStackScreenProps<RootStackParamList, "Find">;
 
 const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
   const { jobs, loading, error } = useJobs();
