@@ -7,11 +7,11 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { v4 as uuidv4 } from "uuid"; // ✅ works in React Native now
-import "react-native-get-random-values"; // polyfill crypto
+import { v4 as uuidv4 } from "uuid";
+import "react-native-get-random-values";
 
 export interface ApiJob {
-  guid: string; // Using guid as the unique ID
+  guid: string; 
   title: string;
   mainCategory: string;
   companyName: string;
@@ -31,7 +31,7 @@ export interface ApiJob {
 }
 
 export interface Job extends ApiJob {
-  id: string; // generated uuid
+  id: string; 
 }
 
 interface JobsApiResponse {
@@ -62,7 +62,7 @@ export const JobsProvider = ({ children }: { children: ReactNode }) => {
   const mapJobsWithIds = useCallback((apiJobs: ApiJob[]): Job[] => {
     return apiJobs.map((job) => ({
       ...job,
-      id: uuidv4(), // ✅ works now with get-random-values polyfill
+      id: uuidv4(), 
     }));
   }, []);
 

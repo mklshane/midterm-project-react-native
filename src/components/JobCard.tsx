@@ -26,7 +26,6 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
     saved ? removeJob(job.guid) : saveJob(job);
   };
 
-  // 1. Format Salary (Returns null if unlisted so we can style it differently)
   const getSalaryString = () => {
     if (!job.minSalary && !job.maxSalary) return null;
 
@@ -43,7 +42,6 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
     return formatter.format((job.minSalary || job.maxSalary) as number);
   };
 
-  // 2. Format Unix Timestamp to "Days Ago"
   const getDaysAgo = (epochTime: number) => {
     const days = Math.floor((Date.now() / 1000 - epochTime) / 86400);
     if (days === 0) return "Today";
@@ -62,7 +60,6 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
         { backgroundColor: colors.surface, borderColor: colors.primary },
       ]}
     >
-      {/* Top Row: Company Info & Save */}
       <View style={styles.header}>
         <View style={styles.companyInfo}>
           <View style={[styles.logoBox, { borderColor: colors.border }]}>
@@ -95,17 +92,15 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
           <Ionicons
             name={saved ? "bookmark" : "bookmark-outline"}
             size={22}
-            color={saved ? colors.text : colors.mutedText}
+            color={saved ? colors.saveIcon : colors.mutedText}
           />
         </TouchableOpacity>
       </View>
 
-      {/* Heavy Title */}
       <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
         {job.title}
       </Text>
 
-      {/* Actual Tags (Flat, Minimalist Boxes) */}
       {job.tags && job.tags.length > 0 && (
         <View style={styles.tagsContainer}>
           {job.tags.slice(0, 4).map((tag, index) => (
@@ -121,10 +116,8 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
         </View>
       )}
 
-      {/* Flat Divider */}
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-      {/* Footer: Logistics & Salary */}
       <View style={styles.footer}>
         <View style={styles.logistics}>
           <Text style={[styles.detailText, { color: colors.text }]}>
@@ -188,7 +181,7 @@ const styles = StyleSheet.create({
   timeAgo: { fontSize: 13, marginTop: 2 },
   title: {
     fontSize: 22,
-    fontWeight: "900",
+    fontWeight: "800",
     lineHeight: 28,
     letterSpacing: -0.5,
     marginBottom: 12,
@@ -240,7 +233,7 @@ const styles = StyleSheet.create({
   unlistedText: {
     fontSize: 13,
     fontWeight: "400",
-    fontStyle: "italic", // Makes it feel like secondary metadata
+    fontStyle: "italic", 
   },
 });
 

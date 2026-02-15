@@ -19,6 +19,7 @@ export type ThemeColors = {
   highlight: string;
   gradientStart: string;
   gradientEnd: string;
+  saveIcon: string; 
 };
 
 export const themeColors: Record<ThemeMode, ThemeColors> = {
@@ -26,21 +27,22 @@ export const themeColors: Record<ThemeMode, ThemeColors> = {
     background: "#FAFAFA",
     surface: "#FFFFFF",
     card: "#FFFFFF",
-    text: "#09090B", // Near black
+    text: "#09090B", 
     mutedText: "#71717A",
-    primary: "#18181B", // Stark black for primary buttons/accents
+    primary: "#18181B", 
     primaryLight: "#F4F4F5",
     secondary: "#27272A",
-    accent: "#3B82F6", // Keep a blue just for links/special highlights if needed
+    accent: "#3B82F6", 
     success: "#10B981",
     warning: "#F59E0B",
     error: "#EF4444",
     border: "#E4E4E7",
     divider: "#F4F4F5",
-    shadow: "transparent", // No shadows in this design
+    shadow: "transparent", 
     highlight: "#F4F4F5",
     gradientStart: "#18181B",
     gradientEnd: "#18181B",
+    saveIcon: "#EAB308", 
   },
   dark: {
     background: "#09090B",
@@ -48,7 +50,7 @@ export const themeColors: Record<ThemeMode, ThemeColors> = {
     card: "#18181B",
     text: "#FAFAFA",
     mutedText: "#A1A1AA",
-    primary: "#FAFAFA", // Pure white for primary elements
+    primary: "#FAFAFA", 
     primaryLight: "#27272A",
     secondary: "#E4E4E7",
     accent: "#3B82F6",
@@ -61,6 +63,7 @@ export const themeColors: Record<ThemeMode, ThemeColors> = {
     highlight: "#27272A",
     gradientStart: "#FAFAFA",
     gradientEnd: "#FAFAFA",
+    saveIcon: "#FBBF24", 
   },
 };
 
