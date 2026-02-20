@@ -1,30 +1,39 @@
-import React, { useState, useMemo } from "react";
-import {
-  View,
-  FlatList,
-  Text,
-  StyleSheet,
-  TextInput,
-  ActivityIndicator,
-  TouchableOpacity,
-  SafeAreaView,
-} from "react-native";
+import React, { useMemo, useRef, useState } from "react";
+import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import { CompositeScreenProps } from "@react-navigation/native";
+import { RootStackParamList, RootTabParamList } from "../navigation/props";
 import { useJobs, Job } from "../contexts/JobsContext";
 import { useTheme } from "../contexts/ThemeContext";
 import JobCard from "../components/JobCard";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../navigation/props";
-import { Ionicons } from "@expo/vector-icons";
-import ThemeToggle from "../components/ThemeToggle";
+import HeaderSection from "../components/JobFinder/HeaderSection";
+import EmptyState from "../components/JobFinder/EmptyState";
+import FilterModal, { JobFilters } from "../components/JobFinder/FilterModal";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Find">;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<RootTabParamList, "Find">,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
-  const { jobs, loading, error } = useJobs();
-  // Destructure isDarkMode and toggleTheme from your context
+  const { jobs, loading, loadingMore, error, hasMore, loadMoreJobs } = useJobs();
   const { colors, isDarkMode, toggleTheme } = useTheme();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [filters, setFilters] = useState<JobFilters>({
+    salarySort: null,
+    jobType: null,
+    workModel: null,
+    seniorityLevel: null,
+  });
+  const onEndReachedCalledDuringMomentum = useRef(true);
+
+  const resetFilters = () => {
+    setFilters({ salarySort: null, jobType: null, workModel: null, seniorityLevel: null });
+  };
 
   const categories = useMemo(() => {
     const cats = new Set<string>();
@@ -33,6 +42,81 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
     });
     return Array.from(cats).slice(0, 5);
   }, [jobs]);
+
+  const jobTypeOptions = useMemo(() => {
+    const values = new Set<string>();
+    jobs.forEach((job) => {
+      if (job.jobType) values.add(job.jobType);
+    });
+    return Array.from(values);
+  }, [jobs]);
+
+  const workModelOptions = useMemo(() => {
+    const values = new Set<string>();
+    jobs.forEach((job) => {
+      if (job.workModel) values.add(job.workModel);
+    });
+    return Array.from(values);
+  }, [jobs]);
+
+  const seniorityOptions = useMemo(() => {
+    const values = new Set<string>();
+    jobs.forEach((job) => {
+      if (job.seniorityLevel) values.add(job.seniorityLevel);
+    });
+    return Array.from(values);
+  }, [jobs]);
+
+  const hasActiveFilters =
+    filters.salarySort !== null ||
+    filters.jobType !== null ||
+    filters.workModel !== null ||
+    filters.seniorityLevel !== null;
+
+  const activeFilters = useMemo(() => {
+    const chips: Array<{ key: string; label: string }> = [];
+
+    if (selectedCategory) {
+      chips.push({ key: "category", label: `Category: ${selectedCategory}` });
+    }
+    if (filters.salarySort) {
+      chips.push({
+        key: "salarySort",
+        label: filters.salarySort === "highest" ? "Salary: Highest" : "Salary: Lowest",
+      });
+    }
+    if (filters.jobType) {
+      chips.push({ key: "jobType", label: `Type: ${filters.jobType}` });
+    }
+    if (filters.workModel) {
+      chips.push({ key: "workModel", label: `Model: ${filters.workModel}` });
+    }
+    if (filters.seniorityLevel) {
+      chips.push({ key: "seniorityLevel", label: `Seniority: ${filters.seniorityLevel}` });
+    }
+
+    return chips;
+  }, [selectedCategory, filters]);
+
+  const handleRemoveFilter = (key: string) => {
+    if (key === "category") {
+      setSelectedCategory(null);
+      return;
+    }
+
+    setFilters((previous) => ({
+      ...previous,
+      [key]: null,
+    }));
+  };
+
+  const isFiltering = Boolean(search || selectedCategory || hasActiveFilters);
+
+  const getComparableSalary = (job: Job) => {
+    if (typeof job.maxSalary === "number") return job.maxSalary;
+    if (typeof job.minSalary === "number") return job.minSalary;
+    return null;
+  };
 
   const filteredJobs = useMemo(() => {
     let filtered = jobs;
@@ -46,145 +130,102 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
       );
     }
     if (selectedCategory) {
-      filtered = filtered.filter(
-        (job: Job) => job.mainCategory === selectedCategory,
-      );
+      filtered = filtered.filter((job: Job) => job.mainCategory === selectedCategory);
     }
+
+    if (filters.jobType) {
+      filtered = filtered.filter((job: Job) => job.jobType === filters.jobType);
+    }
+
+    if (filters.workModel) {
+      filtered = filtered.filter((job: Job) => job.workModel === filters.workModel);
+    }
+
+    if (filters.seniorityLevel) {
+      filtered = filtered.filter((job: Job) => job.seniorityLevel === filters.seniorityLevel);
+    }
+
+    if (filters.salarySort) {
+      filtered = [...filtered].sort((firstJob, secondJob) => {
+        const firstSalary = getComparableSalary(firstJob);
+        const secondSalary = getComparableSalary(secondJob);
+
+        if (firstSalary === null && secondSalary === null) return 0;
+        if (firstSalary === null) return 1;
+        if (secondSalary === null) return -1;
+
+        return filters.salarySort === "highest"
+          ? secondSalary - firstSalary
+          : firstSalary - secondSalary;
+      });
+    }
+
     return filtered;
-  }, [search, selectedCategory, jobs]);
+  }, [search, selectedCategory, jobs, filters]);
 
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
-    >
+    <SafeAreaView edges={['top', 'left', 'right']} style={[styles.safeArea, { backgroundColor: colors.background }]}>      
       <FlatList
         data={filteredJobs}
         keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator
         contentContainerStyle={styles.listContent}
+        onEndReachedThreshold={0.4}
+        onMomentumScrollBegin={() => {
+          onEndReachedCalledDuringMomentum.current = false;
+        }}
+        onEndReached={() => {
+          if (onEndReachedCalledDuringMomentum.current) return;
+
+          if (!loading && !loadingMore && hasMore && !isFiltering && jobs.length > 0) {
+            loadMoreJobs();
+            onEndReachedCalledDuringMomentum.current = true;
+          }
+        }}
         ListHeaderComponent={
-          <View style={styles.headerContainer}>
-            {/* Top Row: Header & Theme Toggle */}
-            <View style={styles.topRow}>
-              <Text style={[styles.mainHeader, { color: colors.text }]}>
-                Find work.
-              </Text>
-
-              <ThemeToggle
-                isDarkMode={isDarkMode}
-                color={colors.text}
-                onToggle={toggleTheme}
-              />
-            </View>
-
-            {/* Flat, Minimal Search Bar */}
-            <View
-              style={[
-                styles.searchBox,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
-            >
-              <Ionicons
-                name="search"
-                size={18}
-                color={colors.mutedText}
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={[styles.searchInput, { color: colors.text }]}
-                placeholder="Search roles, companies..."
-                placeholderTextColor={colors.mutedText}
-                value={search}
-                onChangeText={setSearch}
-              />
-              {search ? (
-                <TouchableOpacity
-                  onPress={() => setSearch("")}
-                  hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-                >
-                  <Ionicons
-                    name="close-circle"
-                    size={18}
-                    color={colors.mutedText}
-                  />
-                </TouchableOpacity>
-              ) : null}
-            </View>
-
-            {/* Clean Text-based Categories */}
-            <View style={styles.categoriesWrapper}>
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={["All", ...categories]}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => {
-                  const isActive =
-                    selectedCategory === item ||
-                    (item === "All" && !selectedCategory);
-                  return (
-                    <TouchableOpacity
-                      style={styles.categoryTab}
-                      onPress={() =>
-                        setSelectedCategory(item === "All" ? null : item)
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.categoryText,
-                          {
-                            color: isActive ? colors.text : colors.mutedText,
-                            fontWeight: isActive ? "700" : "500",
-                          },
-                        ]}
-                      >
-                        {item}
-                      </Text>
-                      {/* Active Indicator Dot */}
-                      {isActive && (
-                        <View
-                          style={[
-                            styles.activeDot,
-                            { backgroundColor: colors.text },
-                          ]}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  );
-                }}
-              />
-            </View>
-
-            {/* Clean Count */}
-            {!loading && !error && (
-              <Text style={[styles.countText, { color: colors.mutedText }]}>
-                {filteredJobs.length}{" "}
-                {filteredJobs.length === 1 ? "result" : "results"}
-              </Text>
-            )}
-          </View>
+          <HeaderSection
+            colors={colors}
+            isDarkMode={isDarkMode}
+            toggleTheme={toggleTheme}
+            search={search}
+            onSearchChange={setSearch}
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            loading={loading}
+            error={error}
+            filteredCount={filteredJobs.length}
+            onOpenFilters={() => setIsFilterModalVisible(true)}
+            hasActiveFilters={hasActiveFilters}
+            activeFilters={activeFilters}
+            onRemoveFilter={handleRemoveFilter}
+          />
         }
         renderItem={({ item }) => (
-          <JobCard
-            job={item}
-            onPress={() => navigation.navigate("JobDetails", { job: item })}
-          />
+          <JobCard job={item} onPress={() => navigation.navigate("JobDetails", { job: item })} />
         )}
         ListEmptyComponent={() => (
-          <View style={styles.centerContainer}>
-            {loading ? (
-              <ActivityIndicator size="small" color={colors.text} />
-            ) : error ? (
-              <Text style={[styles.errorText, { color: colors.error }]}>
-                {error}
-              </Text>
-            ) : (
-              <Text style={[styles.emptyText, { color: colors.mutedText }]}>
-                No jobs match your criteria.
-              </Text>
-            )}
-          </View>
+          <EmptyState loading={loading} error={error} colors={colors} />
         )}
+        ListFooterComponent={
+          loadingMore && !isFiltering && filteredJobs.length > 0 ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          ) : null
+        }
+      />
+
+      <FilterModal
+        visible={isFilterModalVisible}
+        colors={colors}
+        filters={filters}
+        jobTypeOptions={jobTypeOptions}
+        workModelOptions={workModelOptions}
+        seniorityOptions={seniorityOptions}
+        onClose={() => setIsFilterModalVisible(false)}
+        onChange={setFilters}
+        onReset={resetFilters}
       />
     </SafeAreaView>
   );
@@ -192,38 +233,8 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  listContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20 },
-  headerContainer: { marginBottom: 16 },
-  topRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center", // Aligns the text and icon nicely
-    marginBottom: 24,
-  },
-  mainHeader: {
-    fontSize: 40,
-    fontWeight: "900",
-    letterSpacing: -1.5,
-  },
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    height: 50,
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    marginBottom: 24,
-  },
-  searchIcon: { marginRight: 10 },
-  searchInput: { flex: 1, fontSize: 16, height: "100%" },
-  categoriesWrapper: { marginBottom: 24 },
-  categoryTab: { marginRight: 24, alignItems: "center" },
-  categoryText: { fontSize: 15, marginBottom: 4 },
-  activeDot: { width: 4, height: 4, borderRadius: 2, marginTop: 2 },
-  countText: { fontSize: 13, fontWeight: "600", marginBottom: 8 },
-  centerContainer: { paddingVertical: 60, alignItems: "center" },
-  errorText: { fontSize: 14, fontWeight: "500" },
-  emptyText: { fontSize: 15 },
+  listContent: { paddingHorizontal: 20, paddingBottom: 4, paddingTop: 20 },
+  footerLoader: { paddingVertical: 16 },
 });
 
 export default JobFinderScreen;

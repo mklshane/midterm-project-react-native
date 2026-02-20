@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { JobsProvider } from "./src/contexts/JobsContext";
 import { SavedJobsProvider } from "./src/contexts/SavedJobContext";
+import { ApplicationsProvider } from "./src/contexts/ApplicationsContext";
 
 export default function App() {
   return (
@@ -13,9 +14,11 @@ export default function App() {
       <SafeAreaProvider>
         <JobsProvider>
           <SavedJobsProvider>
-            <ThemeProvider>
-              <AppNavigator />
-            </ThemeProvider>
+            <ApplicationsProvider>
+              <ThemeProvider>
+                <AppNavigator />
+              </ThemeProvider>
+            </ApplicationsProvider>
           </SavedJobsProvider>
         </JobsProvider>
       </SafeAreaProvider>

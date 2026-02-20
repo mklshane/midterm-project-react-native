@@ -2,40 +2,47 @@ import React, { useLayoutEffect, useState } from "react";
 import {
   View,
   Text,
-  Image,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
+  Linking,
+  Alert,
   useWindowDimensions,
   Platform,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import RenderHtml from "react-native-render-html";
 import { RootStackParamList } from "../navigation/props";
 import { useTheme } from "../contexts/ThemeContext";
 import { useSavedJobs } from "../contexts/SavedJobContext";
-import { Ionicons } from "@expo/vector-icons";
-
+import { useApplications } from "../contexts/ApplicationsContext";
 import ApplicationFormModal from "../components/ApplicationFormModal";
+import CompanyHeader from "../components/JobDetails/CompanyHeader";
+import TagsList from "../components/JobDetails/TagsList";
+import LogisticsRow from "../components/JobDetails/LogisticsRow";
+import DescriptionSection from "../components/JobDetails/DescriptionSection";
+import BottomActionsBar from "../components/JobDetails/BottomActionsBar";
+import ThemeToggle from "../components/Base/ThemeToggle";
 
 type Props = NativeStackScreenProps<RootStackParamList, "JobDetails">;
 
 const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { job, fromSavedJobs } = route.params;
-  const { colors } = useTheme();
+  const { job } = route.params;
+  const { colors, isDarkMode, toggleTheme } = useTheme();
   const { width } = useWindowDimensions();
   const { saveJob, removeJob, isJobSaved } = useSavedJobs();
+  const { isApplied } = useApplications();
   const saved = isJobSaved(job.guid);
+  const applied = isApplied(job.guid);
 
-  // Form Visibility State
   const [isFormVisible, setFormVisible] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerBackVisible: true,
       headerTintColor: colors.text,
-      headerShadowVisible: false, // Removes the header bottom border for a cleaner look
+      headerShadowVisible: false,
       headerStyle: { backgroundColor: colors.background },
+      headerTitle: "",
     });
   }, [navigation, colors]);
 
@@ -44,13 +51,31 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const handleApplyPress = () => {
+    if (applied) return;
     setFormVisible(true);
   };
 
-  const handleApplicationSuccess = () => {
-    if (fromSavedJobs) {
-      navigation.navigate("Find");
+  const handleOpenLink = async () => {
+    const url = job.applicationLink;
+    if (!url) {
+      Alert.alert("Link unavailable", "This job does not have an application link.");
+      return;
     }
+
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) {
+        Alert.alert("Cannot open link", "Your device cannot open this URL.");
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (error) {
+      Alert.alert("Cannot open link", "Something went wrong while opening the URL.");
+    }
+  };
+
+  const handleApplicationSuccess = () => {
+    navigation.reset({ index: 0, routes: [{ name: "Tabs", params: { screen: "Find" } }] });
   };
 
   const getSalaryString = () => {
@@ -68,44 +93,17 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const salary = getSalaryString();
 
-  // Polished Typography for HTML
-  const tagsStyles = {
-    body: {
-      color: colors.text,
-      fontSize: 16,
-      lineHeight: 26,
-      fontWeight: "400" as const,
-    },
-    p: { marginBottom: 16, lineHeight: 26 },
-    h1: {
-      fontSize: 24,
-      fontWeight: "800" as const,
-      marginTop: 24,
-      marginBottom: 12,
-      color: colors.text,
-    },
-    h2: {
-      fontSize: 20,
-      fontWeight: "700" as const,
-      marginTop: 20,
-      marginBottom: 10,
-      color: colors.text,
-    },
-    h3: {
-      fontSize: 18,
-      fontWeight: "600" as const,
-      marginTop: 16,
-      marginBottom: 8,
-    },
-    ul: { paddingLeft: 20, marginTop: 4, marginBottom: 16 },
-    li: { marginBottom: 8, lineHeight: 24, color: colors.text },
-    a: {
-      color: colors.primary,
-      textDecorationLine: "none" as const,
-      fontWeight: "600" as const,
-    },
-    strong: { fontWeight: "700" as const, color: colors.text },
+  const formatDate = (value?: number) => {
+    if (!value) return "N/A";
+    return new Date(value * 1000).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
+
+  const postedOn = formatDate(job.pubDate);
+  const expiresOn = formatDate(job.expiryDate);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -113,168 +111,121 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Modern Header Row */}
-        <View style={styles.headerRow}>
-          <View style={[styles.logoBox, { backgroundColor: colors.surface }]}>
-            {job.companyLogo ? (
-              <Image
-                source={{ uri: job.companyLogo }}
-                style={styles.logo}
-                resizeMode="cover"
-              />
-            ) : (
-              <Text style={[styles.fallbackLogo, { color: colors.primary }]}>
-                {job.companyName.charAt(0)}
-              </Text>
-            )}
+        {/* ── Hero Card ── */}
+        <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.topRow}>
+            <View style={[styles.pretitleBadge, { backgroundColor: colors.primaryLight }]}>
+              <Ionicons name="briefcase" size={12} color={colors.primary} />
+              <Text style={[styles.pretitle, { color: colors.primary }]}>Job Overview</Text>
+            </View>
+            <View style={styles.topActions}>
+              {applied && (
+                <View style={[styles.statusBadge, { backgroundColor: colors.success + "1A" }]}>
+                  <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+                  <Text style={[styles.statusText, { color: colors.success }]}>Applied</Text>
+                </View>
+              )}
+              {saved && !applied && (
+                <View style={[styles.statusBadge, { backgroundColor: colors.saveIcon + "1A" }]}>
+                  <Ionicons name="bookmark" size={14} color={colors.saveIcon} />
+                  <Text style={[styles.statusText, { color: colors.saveIcon }]}>Saved</Text>
+                </View>
+              )}
+              <ThemeToggle isDarkMode={isDarkMode} color={colors.text} onToggle={toggleTheme} />
+            </View>
           </View>
-          <View style={styles.companyInfo}>
-            <Text
-              style={[styles.companyName, { color: colors.text }]}
-              numberOfLines={1}
-            >
-              {job.companyName}
-            </Text>
-            <View style={styles.locationWrapper}>
-              <Ionicons
-                name="location-outline"
-                size={14}
-                color={colors.mutedText}
-              />
-              <Text style={[styles.locationText, { color: colors.mutedText }]}>
-                {job.locations?.[0] || "Remote"} • {job.workModel}
+
+          <CompanyHeader job={job} colors={colors} />
+
+          <Text style={[styles.title, { color: colors.text }]}>{job.title}</Text>
+
+          <View style={styles.categoryRow}>
+            <View style={[styles.categoryBadge, { backgroundColor: colors.primaryLight }]}>
+              <Ionicons name="grid-outline" size={12} color={colors.mutedText} />
+              <Text style={[styles.categoryText, { color: colors.mutedText }]}>
+                {job.mainCategory || "General"}
               </Text>
+            </View>
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+          <View style={styles.metaRow}>
+            <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
+              <View style={[styles.metaIconBox, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="calendar-outline" size={14} color={colors.primary} />
+              </View>
+              <View>
+                <Text style={[styles.metaLabel, { color: colors.mutedText }]}>Posted</Text>
+                <Text style={[styles.metaValue, { color: colors.text }]}>{postedOn}</Text>
+              </View>
+            </View>
+            <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
+              <View style={[styles.metaIconBox, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="time-outline" size={14} color={colors.primary} />
+              </View>
+              <View>
+                <Text style={[styles.metaLabel, { color: colors.mutedText }]}>Expires</Text>
+                <Text style={[styles.metaValue, { color: colors.text }]}>{expiresOn}</Text>
+              </View>
             </View>
           </View>
         </View>
 
-        {/* Big Title */}
-        <Text style={[styles.title, { color: colors.text }]}>{job.title}</Text>
-
-        {/* Tags (Soft Pills) */}
-        {job.tags && job.tags.length > 0 && (
-          <View style={styles.tagsContainer}>
-            {job.tags.map((tag, index) => (
-              <View
-                key={index}
-                style={[styles.tagBadge, { backgroundColor: colors.surface }]}
-              >
-                <Text style={[styles.tagText, { color: colors.text }]}>
-                  {tag}
-                </Text>
-              </View>
-            ))}
+        {/* ── Compensation & Role ── */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIconBox, { backgroundColor: colors.primaryLight }]}>
+              <Ionicons name="stats-chart" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Compensation & Role</Text>
           </View>
-        )}
+          <LogisticsRow
+            job={job}
+            salary={salary}
+            colors={colors}
+            compact
+            showLocationWorkModel
+            scrollable={false}
+          />
+        </View>
 
-        {/* Logistics (Icon-driven Chips) */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.logisticsScroll}
-        >
-          <View style={styles.logisticsRow}>
-            <View
-              style={[styles.logisticChip, { backgroundColor: colors.surface }]}
-            >
-              <View
-                style={[
-                  styles.iconWrapper,
-                  { backgroundColor: colors.background },
-                ]}
-              >
-                <Ionicons name="cash" size={18} color={colors.primary} />
+        {/* ── Skills & Tools ── */}
+        {job.tags?.length > 0 ? (
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.sectionHeader}>
+              <View style={[styles.sectionIconBox, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="code-slash" size={16} color={colors.primary} />
               </View>
-              <Text style={[styles.logisticValue, { color: colors.text }]}>
-                {salary || "Unlisted"}
-              </Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Skills & Tools</Text>
             </View>
-
-            <View
-              style={[styles.logisticChip, { backgroundColor: colors.surface }]}
-            >
-              <View
-                style={[
-                  styles.iconWrapper,
-                  { backgroundColor: colors.background },
-                ]}
-              >
-                <Ionicons name="briefcase" size={18} color={colors.primary} />
-              </View>
-              <Text style={[styles.logisticValue, { color: colors.text }]}>
-                {job.jobType}
-              </Text>
-            </View>
-
-            <View
-              style={[styles.logisticChip, { backgroundColor: colors.surface }]}
-            >
-              <View
-                style={[
-                  styles.iconWrapper,
-                  { backgroundColor: colors.background },
-                ]}
-              >
-                <Ionicons name="ribbon" size={18} color={colors.primary} />
-              </View>
-              <Text style={[styles.logisticValue, { color: colors.text }]}>
-                {job.seniorityLevel}
-              </Text>
-            </View>
+            <TagsList tags={job.tags} colors={colors} compact />
           </View>
-        </ScrollView>
+        ) : null}
 
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-        {/* Description */}
-        <View style={styles.descriptionContainer}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Job Description
-          </Text>
-          <RenderHtml
-            contentWidth={width - 40}
-            source={{
-              html: job.description || "<p>No description provided.</p>",
-            }}
-            tagsStyles={tagsStyles}
-            baseStyle={{ color: colors.text }}
+        {/* ── Description ── */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <DescriptionSection
+            description={job.description}
+            contentWidth={width - 56}
+            colors={colors}
           />
         </View>
       </ScrollView>
 
-      {/* Floating Bottom Actions Bar */}
-      <View
-        style={[
-          styles.bottomBar,
-          { backgroundColor: colors.background },
-          Platform.OS === "ios" ? styles.shadowIOS : styles.shadowAndroid,
-        ]}
-      >
-        <TouchableOpacity
-          onPress={handleSavePress}
-          style={[styles.saveButton, { backgroundColor: colors.surface }]}
-        >
-          <Ionicons
-            name={saved ? "bookmark" : "bookmark-outline"}
-            size={26}
-            color={saved ? colors.saveIcon : colors.text}
-          />
-        </TouchableOpacity>
+      <BottomActionsBar
+        saved={saved}
+        colors={colors}
+        onSavePress={handleSavePress}
+        onApplyPress={handleApplyPress}
+        onOpenLinkPress={handleOpenLink}
+        applied={applied}
+      />
 
-        <TouchableOpacity
-          onPress={handleApplyPress}
-          style={[styles.applyButton, { backgroundColor: colors.primary }]}
-        >
-          <Text style={[styles.applyText, { color: colors.background }]}>
-            Apply Now
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Application Form Component */}
       <ApplicationFormModal
         visible={isFormVisible}
         onClose={() => setFormVisible(false)}
+        job={job}
         jobTitle={job.title}
         companyName={job.companyName}
         onSuccess={handleApplicationSuccess}
@@ -285,97 +236,150 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { padding: 20, paddingBottom: 130 }, // Padding for floating bar
-  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  logoBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 16, // Softer squircle shape
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-    overflow: "hidden",
-  },
-  logo: { width: "100%", height: "100%" },
-  fallbackLogo: { fontSize: 24, fontWeight: "bold" },
-  companyInfo: { flex: 1, justifyContent: "center" },
-  companyName: { fontSize: 18, fontWeight: "700", marginBottom: 4 },
-  locationWrapper: { flexDirection: "row", alignItems: "center", gap: 4 },
-  locationText: { fontSize: 14, fontWeight: "500" },
-  title: { fontSize: 32, fontWeight: "800", lineHeight: 38, marginBottom: 16 },
+  scrollContent: { padding: 16, paddingBottom: 140, gap: 12 },
 
-  tagsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 24,
-  },
-  tagBadge: {
-    borderRadius: 20, // Pill shape
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  tagText: { fontSize: 13, fontWeight: "600" },
-
-  logisticsScroll: { marginBottom: 32 },
-  logisticsRow: { flexDirection: "row", gap: 12 },
-  logisticChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
-    padding: 8,
-    paddingRight: 16,
-    gap: 10,
-  },
-  iconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logisticValue: { fontSize: 15, fontWeight: "600" },
-
-  divider: { height: 1, width: "100%", marginBottom: 24, opacity: 0.5 },
-  sectionTitle: { fontSize: 20, fontWeight: "700", marginBottom: 12 },
-  descriptionContainer: { paddingBottom: 20 },
-
-  bottomBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
+  /* ── Hero ── */
+  heroCard: {
+    borderRadius: 24,
     padding: 20,
-    paddingBottom: Platform.OS === "ios" ? 36 : 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderWidth: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.08,
+        shadowRadius: 16,
+      },
+      android: { elevation: 8 },
+    }),
+    gap: 6,
   },
-  shadowIOS: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-  },
-  shadowAndroid: {
-    elevation: 20,
-  },
-  saveButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    justifyContent: "center",
+  topRow: {
+    flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
+    justifyContent: "space-between",
+    marginBottom: 8,
   },
-  applyButton: {
+  topActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  pretitleBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  pretitle: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.4,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "800",
+    lineHeight: 32,
+    letterSpacing: -0.3,
+    marginTop: 4,
+  },
+  categoryRow: {
+    flexDirection: "row",
+    marginTop: 2,
+  },
+  categoryBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  categoryText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  divider: {
+    height: 1,
+    marginVertical: 8,
+    borderRadius: 1,
+  },
+  metaRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  metaChip: {
     flex: 1,
-    height: 64,
-    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  metaIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
   },
-  applyText: { fontSize: 18, fontWeight: "700", letterSpacing: 0.5 },
+  metaLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    marginBottom: 2,
+  },
+  metaValue: { fontSize: 13, fontWeight: "700" },
+
+  /* ── Section Cards ── */
+  sectionCard: {
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    borderWidth: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 14,
+  },
+  sectionIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sectionTitle: { fontSize: 16, fontWeight: "800", letterSpacing: -0.2 },
 });
 
 export default JobDetailsScreen;

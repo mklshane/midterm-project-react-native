@@ -1,13 +1,18 @@
 import React from "react";
-import { Text } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Props } from "../navigation/props";
+import WelcomeMessage from "../components/Home/WelcomeMessage";
 
-const HomeScreen: React.FC<Props> = ({navigation}) => {
+const HomeScreen: React.FC<Props> = () => {
     return (
-        <>
-        <Text>Welcome tobdbdb the Job Finder App!</Text>
-        </>
+        <View style={styles.container}>
+            <WelcomeMessage />
+        </View>
     );
-}
+};
+
+const styles = StyleSheet.create({
+    container: { flex: 1, alignItems: "center", justifyContent: "center" },
+});
 
 export default HomeScreen;

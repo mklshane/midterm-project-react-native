@@ -1,15 +1,24 @@
-import { NavigationProp } from "@react-navigation/native";
+import { NavigationProp, NavigatorScreenParams } from "@react-navigation/native";
 import { Job } from "../contexts/JobsContext";
 
-export type RootStackParamList = {
-  Home: undefined;
+export type RootTabParamList = {
   Find: undefined;
+  Saved: undefined;
+  Applied: undefined;
+};
+
+export type RootStackParamList = {
+  Tabs: NavigatorScreenParams<RootTabParamList> | undefined;
   JobDetails: {
     job: Job;
-    fromSavedJobs?: boolean; 
+    fromSavedJobs?: boolean;
+    fromApplied?: boolean;
+  };
+  ApplicationDetails: {
+    applicationId: string;
   };
 };
 
 export interface Props {
-    navigation: NavigationProp<any>;
+  navigation: NavigationProp<any>;
 }

@@ -3,7 +3,7 @@ import {
   View,
   Text,
   Image,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   GestureResponderEvent,
 } from "react-native";
@@ -52,9 +52,8 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
   const salary = getSalaryString();
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
-      activeOpacity={0.8}
       style={[
         styles.card,
         { backgroundColor: colors.surface, borderColor: colors.primary },
@@ -85,7 +84,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
           </View>
         </View>
 
-        <TouchableOpacity
+        <Pressable
           onPress={handleSavePress}
           hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
         >
@@ -94,7 +93,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
             size={22}
             color={saved ? colors.saveIcon : colors.mutedText}
           />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
@@ -134,12 +133,12 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
             </Text>
           ) : (
             <Text style={[styles.unlistedText, { color: colors.mutedText }]}>
-              Unlisted
+              Salary Unlisted
             </Text>
           )}
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
