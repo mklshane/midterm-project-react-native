@@ -10,6 +10,7 @@ import {
 import { Job } from "../contexts/JobsContext";
 import { useSavedJobs } from "../contexts/SavedJobContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { useApplications } from "../contexts/ApplicationsContext";
 import { Ionicons } from "@expo/vector-icons";
 
 interface JobCardProps {
@@ -21,7 +22,9 @@ interface JobCardProps {
 const JobCard: React.FC<JobCardProps> = ({ job, onPress, onRemove }) => {
   const { colors } = useTheme();
   const { saveJob, removeJob, isJobSaved } = useSavedJobs();
+  const { isApplied } = useApplications();
   const saved = isJobSaved(job.guid);
+  const applied = isApplied(job.guid);
 
   const handleSavePress = () => {
     if (saved && onRemove) {
@@ -85,9 +88,17 @@ const JobCard: React.FC<JobCardProps> = ({ job, onPress, onRemove }) => {
             <Text style={[styles.companyName, { color: colors.text }]}>
               {job.companyName}
             </Text>
-            <Text style={[styles.timeAgo, { color: colors.mutedText }]}>
-              {getDaysAgo(job.pubDate)}
-            </Text>
+            <View style={styles.metaRow}>
+              <Text style={[styles.timeAgo, { color: colors.mutedText }]}>
+                {getDaysAgo(job.pubDate)}
+              </Text>
+              {applied ? (
+                <View style={[styles.appliedPill, { backgroundColor: colors.success + "1A", borderColor: colors.success }]}>
+                  <Ionicons name="checkmark-circle" size={12} color={colors.success} />
+                  <Text style={[styles.appliedText, { color: colors.success }]}>Applied</Text>
+                </View>
+              ) : null}
+            </View>
           </View>
         </View>
 
@@ -184,7 +195,28 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 2,
+  },
   timeAgo: { fontSize: 13, marginTop: 2 },
+  appliedPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  appliedText: {
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
   title: {
     fontSize: 22,
     fontWeight: "800",
