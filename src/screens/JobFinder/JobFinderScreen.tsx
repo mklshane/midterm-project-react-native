@@ -1,16 +1,17 @@
 import React, { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
+import { ActivityIndicator, FlatList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { CompositeScreenProps } from "@react-navigation/native";
-import { RootStackParamList, RootTabParamList } from "../navigation/props";
-import { useJobs, Job } from "../contexts/JobsContext";
-import { useTheme } from "../contexts/ThemeContext";
-import JobCard from "../components/JobCard";
-import HeaderSection from "../components/JobFinder/HeaderSection";
-import EmptyState from "../components/JobFinder/EmptyState";
-import FilterModal, { JobFilters } from "../components/JobFinder/FilterModal";
+import { RootStackParamList, RootTabParamList } from "../../navigation/props";
+import { useJobs, Job } from "../../contexts/JobsContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import JobCard from "../../components/JobCard";
+import HeaderSection from "../../components/JobFinder/HeaderSection";
+import EmptyState from "../../components/JobFinder/EmptyState";
+import FilterModal, { JobFilters } from "../../components/JobFinder/FilterModal";
+import { styles } from "./JobFinder.styles";
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<RootTabParamList, "Find">,
@@ -18,7 +19,7 @@ type Props = CompositeScreenProps<
 >;
 
 const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
-  const { jobs, loading, loadingMore, error, hasMore, loadMoreJobs } = useJobs();
+  const { jobs, loading, loadingMore, error, totalCount, hasMore, loadMoreJobs } = useJobs();
   const { colors, isDarkMode, toggleTheme } = useTheme();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -163,6 +164,8 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
     return filtered;
   }, [search, selectedCategory, jobs, filters]);
 
+  const displayCount = isFiltering ? filteredJobs.length : totalCount;
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={[styles.safeArea, { backgroundColor: colors.background }]}>      
       <FlatList
@@ -194,7 +197,7 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
             onCategoryChange={setSelectedCategory}
             loading={loading}
             error={error}
-            filteredCount={filteredJobs.length}
+            filteredCount={displayCount}
             onOpenFilters={() => setIsFilterModalVisible(true)}
             hasActiveFilters={hasActiveFilters}
             activeFilters={activeFilters}
@@ -230,11 +233,5 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
-  listContent: { paddingHorizontal: 20, paddingBottom: 4, paddingTop: 20 },
-  footerLoader: { paddingVertical: 16 },
-});
 
 export default JobFinderScreen;

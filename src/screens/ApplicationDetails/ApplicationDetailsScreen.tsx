@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { RootStackParamList } from "../navigation/props";
-import { useApplications } from "../contexts/ApplicationsContext";
-import { useTheme } from "../contexts/ThemeContext";
-import TagsList from "../components/JobDetails/TagsList";
-import LogisticsRow from "../components/JobDetails/LogisticsRow";
-import DeleteConfirmModal from "../components/AppliedJobs/DeleteConfirmModal";
+import { RootStackParamList } from "../../navigation/props";
+import { useApplications } from "../../contexts/ApplicationsContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import TagsList from "../../components/JobDetails/TagsList";
+import LogisticsRow from "../../components/JobDetails/LogisticsRow";
+import DeleteConfirmModal from "../../components/AppliedJobs/DeleteConfirmModal";
+import { styles } from "./ApplicationDetails.styles";
 
 const formatDate = (ts: number) => new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 
@@ -110,41 +111,5 @@ const ApplicationDetailsScreen: React.FC<NativeStackScreenProps<RootStackParamLi
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scroll: { paddingHorizontal: 20, paddingTop: 12, gap: 16, paddingBottom: 72 },
-  card: {
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 18,
-    gap: 12,
-  },
-  pretitle: { fontSize: 12, fontWeight: "700", letterSpacing: 0.6, textTransform: "uppercase" },
-  title: { fontSize: 24, fontWeight: "800", lineHeight: 30 },
-  company: { fontSize: 14, fontWeight: "600" },
-  subheading: { fontSize: 16, fontWeight: "700" },
-  row: { flexDirection: "row", gap: 10 },
-  badge: { flex: 1, borderWidth: 1, borderRadius: 12, padding: 12, gap: 4 },
-  badgeLabel: { fontSize: 12, fontWeight: "700" },
-  badgeValue: { fontSize: 14, fontWeight: "700" },
-  sectionCard: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 4 },
-  fieldRow: { paddingVertical: 10, gap: 4 },
-  fieldLabel: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 },
-  fieldValue: { fontSize: 15, fontWeight: "700" },
-  rowDivider: { height: 1, width: "100%" },
-  coverLetter: { borderWidth: 1, borderRadius: 12, padding: 12, gap: 6 },
-  coverText: { fontSize: 14, lineHeight: 22, fontWeight: "500" },
-  actions: { flexDirection: "row", gap: 10, marginTop: 6 },
-  secondaryButton: { flex: 1, borderWidth: 1, borderRadius: 12, paddingVertical: 12, alignItems: "center" },
-  secondaryText: { fontSize: 14, fontWeight: "700" },
-  dangerButton: { flex: 1, borderRadius: 12, paddingVertical: 12, alignItems: "center", borderWidth: 1 },
-  dangerText: { fontSize: 14, fontWeight: "800" },
-  emptyWrapper: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 12 },
-  emptyTitle: { fontSize: 20, fontWeight: "800" },
-  emptySubtitle: { fontSize: 14, fontWeight: "500", textAlign: "center", lineHeight: 20 },
-  backButton: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 },
-  backText: { fontSize: 14, fontWeight: "700" },
-});
 
 export default ApplicationDetailsScreen;

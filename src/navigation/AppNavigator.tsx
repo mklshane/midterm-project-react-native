@@ -9,11 +9,11 @@ import {
   NavigationContainer,
 } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import JobFinderScreen from "../screens/JobFinderScreen";
-import JobDetailsScreen from "../screens/JobDetailsScreen"; 
-import SavedJobsScreen from "../screens/SavedJobsScreen";
-import AppliedJobsScreen from "../screens/AppliedJobsScreen";
-import ApplicationDetailsScreen from "../screens/ApplicationDetailsScreen";
+import JobFinderScreen from "../screens/JobFinder/JobFinderScreen";
+import JobDetailsScreen from "../screens/JobDetails/JobDetailsScreen"; 
+import SavedJobsScreen from "../screens/SavedJobs/SavedJobsScreen";
+import AppliedJobsScreen from "../screens/AppliedJobs/AppliedJobsScreen";
+import ApplicationDetailsScreen from "../screens/ApplicationDetails/ApplicationDetailsScreen";
 
 import { useTheme } from "../contexts/ThemeContext";
 

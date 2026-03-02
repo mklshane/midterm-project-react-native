@@ -1,16 +1,17 @@
 import React, { useState } from "react";
-import { View, FlatList, StyleSheet, Text } from "react-native";
+import { View, FlatList, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { CompositeScreenProps } from "@react-navigation/native";
-import { RootStackParamList, RootTabParamList } from "../navigation/props";
-import { useApplications } from "../contexts/ApplicationsContext";
-import { useTheme } from "../contexts/ThemeContext";
-import AppliedJobCard from "../components/AppliedJobs/AppliedJobCard";
-import AppliedEmpty from "../components/AppliedJobs/AppliedEmpty";
-import DeleteConfirmModal from "../components/AppliedJobs/DeleteConfirmModal";
-import ThemeToggle from "../components/Base/ThemeToggle";
+import { RootStackParamList, RootTabParamList } from "../../navigation/props";
+import { useApplications } from "../../contexts/ApplicationsContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import AppliedJobCard from "../../components/AppliedJobs/AppliedJobCard";
+import AppliedEmpty from "../../components/AppliedJobs/AppliedEmpty";
+import DeleteConfirmModal from "../../components/AppliedJobs/DeleteConfirmModal";
+import ThemeToggle from "../../components/Base/ThemeToggle";
+import { styles } from "./AppliedJobs.styles";
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<RootTabParamList, "Applied">,
@@ -74,18 +75,5 @@ const AppliedJobsScreen: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  listContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
-  header: { marginBottom: 20 },
-  titleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 3 },
-  title: { fontSize: 32, fontWeight: "900", letterSpacing: -1 },
-  subtitle: { fontSize: 14, fontWeight: "500", lineHeight: 20 },
-  metaRow: { marginTop: 14, flexDirection: "row", alignItems: "center" },
-  counter: { borderRadius: 999, alignItems: "center", justifyContent: "center", paddingHorizontal: 14, paddingVertical: 8 },
-  counterText: { fontSize: 12, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.4 },
-  separator: { height: 12 },
-});
 
 export default AppliedJobsScreen;

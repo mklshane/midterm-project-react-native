@@ -104,7 +104,7 @@ export const JobsProvider = ({ children }: { children: ReactNode }) => {
 
       const data = await fetchJobsPage(0);
       const apiJobs = Array.isArray(data.jobs) ? data.jobs : [];
-      const pageLimit = typeof data.limit === "number" ? data.limit : PAGE_LIMIT;
+      const pageLimit = typeof data.limit === "number" && data.limit > 0 ? data.limit : PAGE_LIMIT;
       const apiTotalCount = typeof data.total_count === "number" ? data.total_count : apiJobs.length;
 
       setJobs(
@@ -135,7 +135,7 @@ export const JobsProvider = ({ children }: { children: ReactNode }) => {
 
       const data = await fetchJobsPage(nextOffset);
       const apiJobs = Array.isArray(data.jobs) ? data.jobs : [];
-      const pageLimit = typeof data.limit === "number" ? data.limit : PAGE_LIMIT;
+      const pageLimit = typeof data.limit === "number" && data.limit > 0 ? data.limit : PAGE_LIMIT;
       const apiTotalCount = typeof data.total_count === "number" ? data.total_count : totalCount;
 
       setJobs((previousJobs) => {
