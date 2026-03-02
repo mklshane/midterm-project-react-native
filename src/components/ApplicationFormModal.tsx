@@ -37,11 +37,24 @@ type FormValues = {
 };
 
 const validationSchema = Yup.object().shape({
-  name: Yup.string().trim().min(2, "Name is too short").required("Full name is required"),
+  name: Yup.string()
+    .trim()
+    .min(2, "Name is too short")
+    .matches(/^[a-zA-Z\s\-'.]+$/, "Name must only contain letters, spaces, hyphens, or apostrophes")
+    .required("Full name is required"),
   email: Yup.string().email("Invalid email format").required("Email is required"),
   contact: Yup.string()
     .trim()
-    .min(7, "Contact seems too short")
+    .matches(/^[\d\s\-()+]+$/, "Contact must contain only digits and valid symbols (+, -, parentheses)")
+    .test(
+      "digit-count",
+      "Contact must have between 7 and 15 digits",
+      (value) => {
+        if (!value) return false;
+        const digitCount = value.replace(/\D/g, "").length;
+        return digitCount >= 7 && digitCount <= 15;
+      },
+    )
     .required("Contact number is required"),
   coverLetter: Yup.string()
     .trim()
@@ -156,10 +169,11 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
               isSubmitting,
             }) => (
               <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.sheetHandle, { backgroundColor: colors.border }]} />
                 <View style={styles.modalHeader}>
                   <View>
                     <Text style={[styles.modalTitle, { color: colors.text }]}>Apply for this role</Text>
-                   
+                    <Text style={[styles.modalSubtitle, { color: colors.mutedText }]}>Complete the form to apply at {companyName}</Text>
                   </View>
                   <Pressable
                     onPress={onClose}
@@ -182,24 +196,35 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
 
                 <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Personal details</Text>
+
                 <View onLayout={(event) => captureFieldPosition("name", event)}>
                   <Text style={[styles.inputLabel, { color: colors.text }]}>Full Name</Text>
-                  <TextInput
+                  <View
                     style={[
-                      styles.input,
+                      styles.inputShell,
                       {
-                        borderColor: touched.name && errors.name ? colors.error : colors.border,
-                        color: colors.text,
+                        borderColor:
+                          touched.name && errors.name
+                            ? colors.error
+                            : focusedField === "name"
+                              ? colors.primary
+                              : colors.border,
                         backgroundColor: colors.background,
                       },
                     ]}
-                    placeholderTextColor={colors.mutedText}
-                    placeholder="Jane Doe"
-                    onChangeText={handleChange("name")}
-                    onBlur={handleBlur("name")}
-                    onFocus={() => handleFieldFocus("name")}
-                    value={values.name}
-                  />
+                  >
+                    <Ionicons name="person-outline" size={18} color={focusedField === "name" ? colors.primary : colors.mutedText} />
+                    <TextInput
+                      style={[styles.inputInner, { color: colors.text }]}
+                      placeholderTextColor={colors.mutedText}
+                      placeholder="Jane Doe"
+                      onChangeText={handleChange("name")}
+                      onBlur={handleBlur("name")}
+                      onFocus={() => handleFieldFocus("name")}
+                      value={values.name}
+                    />
+                  </View>
                 </View>
                 {touched.name && errors.name ? (
                   <Text style={[styles.errorText, { color: colors.error }]}>{errors.name}</Text>
@@ -207,24 +232,33 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
 
                 <View onLayout={(event) => captureFieldPosition("email", event)}>
                   <Text style={[styles.inputLabel, { color: colors.text }]}>Email Address</Text>
-                  <TextInput
+                  <View
                     style={[
-                      styles.input,
+                      styles.inputShell,
                       {
-                        borderColor: touched.email && errors.email ? colors.error : colors.border,
-                        color: colors.text,
+                        borderColor:
+                          touched.email && errors.email
+                            ? colors.error
+                            : focusedField === "email"
+                              ? colors.primary
+                              : colors.border,
                         backgroundColor: colors.background,
                       },
                     ]}
-                    placeholderTextColor={colors.mutedText}
-                    placeholder="jane@example.com"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    onChangeText={handleChange("email")}
-                    onBlur={handleBlur("email")}
-                    onFocus={() => handleFieldFocus("email")}
-                    value={values.email}
-                  />
+                  >
+                    <Ionicons name="mail-outline" size={18} color={focusedField === "email" ? colors.primary : colors.mutedText} />
+                    <TextInput
+                      style={[styles.inputInner, { color: colors.text }]}
+                      placeholderTextColor={colors.mutedText}
+                      placeholder="jane@example.com"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      onChangeText={handleChange("email")}
+                      onBlur={handleBlur("email")}
+                      onFocus={() => handleFieldFocus("email")}
+                      value={values.email}
+                    />
+                  </View>
                 </View>
                 {touched.email && errors.email ? (
                   <Text style={[styles.errorText, { color: colors.error }]}>{errors.email}</Text>
@@ -232,23 +266,32 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
 
                 <View onLayout={(event) => captureFieldPosition("contact", event)}>
                   <Text style={[styles.inputLabel, { color: colors.text }]}>Contact Number</Text>
-                  <TextInput
+                  <View
                     style={[
-                      styles.input,
+                      styles.inputShell,
                       {
-                        borderColor: touched.contact && errors.contact ? colors.error : colors.border,
-                        color: colors.text,
+                        borderColor:
+                          touched.contact && errors.contact
+                            ? colors.error
+                            : focusedField === "contact"
+                              ? colors.primary
+                              : colors.border,
                         backgroundColor: colors.background,
                       },
                     ]}
-                    placeholderTextColor={colors.mutedText}
-                    placeholder="+1 (555) 000-0000"
-                    keyboardType="phone-pad"
-                    onChangeText={handleChange("contact")}
-                    onBlur={handleBlur("contact")}
-                    onFocus={() => handleFieldFocus("contact")}
-                    value={values.contact}
-                  />
+                  >
+                    <Ionicons name="call-outline" size={18} color={focusedField === "contact" ? colors.primary : colors.mutedText} />
+                    <TextInput
+                      style={[styles.inputInner, { color: colors.text }]}
+                      placeholderTextColor={colors.mutedText}
+                      placeholder="+1 (555) 000-0000"
+                      keyboardType="phone-pad"
+                      onChangeText={handleChange("contact")}
+                      onBlur={handleBlur("contact")}
+                      onFocus={() => handleFieldFocus("contact")}
+                      value={values.contact}
+                    />
+                  </View>
                 </View>
                 {touched.contact && errors.contact ? (
                   <Text style={[styles.errorText, { color: colors.error }]}>{errors.contact}</Text>
@@ -263,7 +306,12 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                     style={[
                       styles.textArea,
                       {
-                        borderColor: touched.coverLetter && errors.coverLetter ? colors.error : colors.border,
+                        borderColor:
+                          touched.coverLetter && errors.coverLetter
+                            ? colors.error
+                            : focusedField === "coverLetter"
+                              ? colors.primary
+                              : colors.border,
                         color: colors.text,
                         backgroundColor: colors.background,
                       },
@@ -284,7 +332,14 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                 ) : null}
 
                 <Pressable
-                  style={[styles.submitButton, { backgroundColor: colors.buttonPrimary, opacity: isSubmitting ? 0.8 : 1 }]}
+                  style={[
+                    styles.submitButton,
+                    {
+                      backgroundColor: colors.buttonPrimary,
+                      borderColor: colors.buttonPrimary,
+                      opacity: isSubmitting ? 0.8 : 1,
+                    },
+                  ]}
                   onPress={handleSubmit as () => void}
                   disabled={isSubmitting}
                 >
@@ -325,6 +380,13 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
+  sheetHandle: {
+    width: 44,
+    height: 5,
+    borderRadius: 999,
+    alignSelf: "center",
+    marginBottom: 14,
+  },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -333,6 +395,12 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 24, fontWeight: "800", letterSpacing: -0.2 },
   modalSubtitle: { fontSize: 14, fontWeight: "500", marginTop: 4 },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    letterSpacing: 0.2,
+    marginBottom: 4,
+  },
   badgeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -365,6 +433,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
   },
+  inputShell: {
+    height: 52,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  inputInner: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "500",
+    paddingVertical: 0,
+  },
   labelRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -390,6 +473,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 24,
     flexDirection: "row",
+    borderWidth: 1,
   },
   submitButtonText: {
     fontSize: 16,
