@@ -27,6 +27,8 @@ interface Props {
   hasActiveFilters: boolean;
   activeFilters: Array<{ key: string; label: string }>;
   onRemoveFilter: (key: string) => void;
+  showTop?: boolean;
+  showExtended?: boolean;
 }
 
 const HeaderSection: React.FC<Props> = ({
@@ -45,125 +47,135 @@ const HeaderSection: React.FC<Props> = ({
   hasActiveFilters,
   activeFilters,
   onRemoveFilter,
+  showTop = true,
+  showExtended = true,
 }) => {
   const categoryItems = ["All", ...categories];
 
   return (
     <View style={styles.headerContainer}>
-      <View style={styles.topRow}>
-        <View>
-          <Text style={[styles.mainHeader, { color: colors.text }]}>Find work.</Text>
-          <Text style={[styles.subHeader, { color: colors.mutedText }]}>Discover your next role</Text>
-        </View>
-        <ThemeToggle isDarkMode={isDarkMode} color={colors.text} onToggle={toggleTheme} />
-      </View>
+      {showTop ? (
+        <>
+          <View style={styles.topRow}>
+            <View>
+              <Text style={[styles.mainHeader, { color: colors.text }]}>Find work.</Text>
+              <Text style={[styles.subHeader, { color: colors.mutedText }]}>Discover your next role</Text>
+            </View>
+            <ThemeToggle isDarkMode={isDarkMode} color={colors.text} onToggle={toggleTheme} />
+          </View>
 
-      <View style={styles.searchRow}>
-        <View
-          style={[
-            styles.searchBox,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-        >
-          <Ionicons name="search" size={18} color={colors.mutedText} style={styles.searchIcon} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search roles, companies..."
-            placeholderTextColor={colors.mutedText}
-            value={search}
-            onChangeText={onSearchChange}
-          />
-          {search ? (
-            <Pressable
-              onPress={() => onSearchChange("")}
-              hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-            >
-              <Ionicons name="close-circle" size={18} color={colors.mutedText} />
-            </Pressable>
-          ) : null}
-        </View>
-
-        <Pressable
-          style={[
-            styles.filterButton,
-            {
-              borderColor: hasActiveFilters ? colors.text : colors.border,
-              backgroundColor: hasActiveFilters ? colors.text : colors.surface,
-            },
-          ]}
-          onPress={onOpenFilters}
-        >
-          <Ionicons
-            name="options-outline"
-            size={18}
-            color={hasActiveFilters ? colors.background : colors.text}
-          />
-        </Pressable>
-      </View>
-
-      <View style={styles.categoriesWrapper}>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={categoryItems}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => {
-            const isActive = selectedCategory === item || (item === "All" && !selectedCategory);
-            return (
-              <Pressable
-                style={[
-                  styles.categoryTab,
-                  {
-                    borderColor: isActive ? colors.text : colors.border,
-                    backgroundColor: isActive ? colors.text : colors.surface,
-                  },
-                ]}
-                onPress={() => onCategoryChange(item === "All" ? null : item)}
-              >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    {
-                      color: isActive ? colors.background : colors.text,
-                      fontWeight: isActive ? "700" : "600",
-                    },
-                  ]}
-                >
-                  {item}
-                </Text>
-              </Pressable>
-            );
-          }}
-        />
-      </View>
-
-      {activeFilters.length > 0 && (
-        <View style={styles.activeFiltersWrap}>
-          {activeFilters.map((filter) => (
+          <View style={styles.searchRow}>
             <View
-              key={filter.key}
               style={[
-                styles.activeFilterChip,
+                styles.searchBox,
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
             >
-              <Text style={[styles.activeFilterText, { color: colors.text }]}>{filter.label}</Text>
-              <Pressable
-                onPress={() => onRemoveFilter(filter.key)}
-                hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
-              >
-                <Ionicons name="close" size={14} color={colors.mutedText} />
-              </Pressable>
+              <Ionicons name="search" size={18} color={colors.mutedText} style={styles.searchIcon} />
+              <TextInput
+                style={[styles.searchInput, { color: colors.text }]}
+                placeholder="Search roles, companies..."
+                placeholderTextColor={colors.mutedText}
+                value={search}
+                onChangeText={onSearchChange}
+              />
+              {search ? (
+                <Pressable
+                  onPress={() => onSearchChange("")}
+                  hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                >
+                  <Ionicons name="close-circle" size={18} color={colors.mutedText} />
+                </Pressable>
+              ) : null}
             </View>
-          ))}
-        </View>
-      )}
 
-      {!loading && !error && (
-        <Text style={[styles.countText, { color: colors.mutedText }]}>
-          {filteredCount} {filteredCount === 1 ? "result" : "results"}
-        </Text>
-      )}
+            <Pressable
+              style={[
+                styles.filterButton,
+                {
+                  borderColor: hasActiveFilters ? colors.text : colors.border,
+                  backgroundColor: hasActiveFilters ? colors.text : colors.surface,
+                },
+              ]}
+              onPress={onOpenFilters}
+            >
+              <Ionicons
+                name="options-outline"
+                size={18}
+                color={hasActiveFilters ? colors.background : colors.text}
+              />
+            </Pressable>
+          </View>
+        </>
+      ) : null}
+
+      {showExtended ? (
+        <>
+          <View style={styles.categoriesWrapper}>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={categoryItems}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => {
+                const isActive = selectedCategory === item || (item === "All" && !selectedCategory);
+                return (
+                  <Pressable
+                    style={[
+                      styles.categoryTab,
+                      {
+                        borderColor: isActive ? colors.text : colors.border,
+                        backgroundColor: isActive ? colors.text : colors.surface,
+                      },
+                    ]}
+                    onPress={() => onCategoryChange(item === "All" ? null : item)}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryText,
+                        {
+                          color: isActive ? colors.background : colors.text,
+                          fontWeight: isActive ? "700" : "600",
+                        },
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                  </Pressable>
+                );
+              }}
+            />
+          </View>
+
+          {activeFilters.length > 0 && (
+            <View style={styles.activeFiltersWrap}>
+              {activeFilters.map((filter) => (
+                <View
+                  key={filter.key}
+                  style={[
+                    styles.activeFilterChip,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                  ]}
+                >
+                  <Text style={[styles.activeFilterText, { color: colors.text }]}>{filter.label}</Text>
+                  <Pressable
+                    onPress={() => onRemoveFilter(filter.key)}
+                    hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+                  >
+                    <Ionicons name="close" size={14} color={colors.mutedText} />
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {!loading && !error && (
+            <Text style={[styles.countText, { color: colors.mutedText }]}>
+              {filteredCount} {filteredCount === 1 ? "result" : "results"}
+            </Text>
+          )}
+        </>
+      ) : null}
     </View>
   );
 };

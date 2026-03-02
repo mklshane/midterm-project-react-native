@@ -1,9 +1,10 @@
 import React, { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { CompositeScreenProps } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { RootStackParamList, RootTabParamList } from "../../navigation/props";
 import { useJobs, Job } from "../../contexts/JobsContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -24,6 +25,7 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const [filters, setFilters] = useState<JobFilters>({
     salarySort: null,
     jobType: null,
@@ -31,6 +33,7 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
     seniorityLevel: null,
   });
   const onEndReachedCalledDuringMomentum = useRef(true);
+  const listRef = useRef<FlatList<Job>>(null);
 
   const resetFilters = () => {
     setFilters({ salarySort: null, jobType: null, workModel: null, seniorityLevel: null });
@@ -169,10 +172,20 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={[styles.safeArea, { backgroundColor: colors.background }]}>      
       <FlatList
+        ref={listRef}
         data={filteredJobs}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator
         contentContainerStyle={styles.listContent}
+        onScroll={(event) => {
+          const offsetY = event.nativeEvent.contentOffset.y;
+          if (offsetY > 700 && !showScrollTop) {
+            setShowScrollTop(true);
+          } else if (offsetY <= 700 && showScrollTop) {
+            setShowScrollTop(false);
+          }
+        }}
+        scrollEventThrottle={16}
         onEndReachedThreshold={0.4}
         onMomentumScrollBegin={() => {
           onEndReachedCalledDuringMomentum.current = false;
@@ -218,6 +231,16 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
           ) : null
         }
       />
+
+      {showScrollTop ? (
+        <Pressable
+          style={[styles.scrollTopButton, { backgroundColor: colors.primary }]}
+          onPress={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })}
+        >
+          <Ionicons name="arrow-up" size={18} color={colors.buttonText} />
+          <Text style={[styles.scrollTopLabel, { color: colors.buttonText }]}>Top</Text>
+        </Pressable>
+      ) : null}
 
       <FilterModal
         visible={isFilterModalVisible}
