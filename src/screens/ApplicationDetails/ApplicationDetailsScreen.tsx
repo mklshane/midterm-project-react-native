@@ -26,8 +26,8 @@ const ApplicationDetailsScreen: React.FC<NativeStackScreenProps<RootStackParamLi
         <View style={styles.emptyWrapper}>
           <Text style={[styles.emptyTitle, { color: colors.text }]}>Application not found</Text>
           <Text style={[styles.emptySubtitle, { color: colors.mutedText }]}>It may have been removed. Go back to Applied to view others.</Text>
-          <Pressable style={[styles.backButton, { backgroundColor: colors.primary }]} onPress={() => navigation.goBack()}>
-            <Text style={[styles.backText, { color: colors.background }]}>Go back</Text>
+          <Pressable style={[styles.backButton, { backgroundColor: colors.buttonPrimary }]} onPress={() => navigation.goBack()}>
+            <Text style={[styles.backText, { color: colors.buttonText }]}>Go back</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -83,10 +83,10 @@ const ApplicationDetailsScreen: React.FC<NativeStackScreenProps<RootStackParamLi
 
           <View style={styles.actions}>            
             <Pressable
-              style={[styles.secondaryButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
+              style={[styles.secondaryButton, { backgroundColor: colors.buttonPrimary, borderColor: colors.buttonPrimary }]}
               onPress={() => navigation.navigate("JobDetails", { job, fromApplied: true })}
             >
-              <Text style={[styles.secondaryText, { color: colors.background }]}>View job</Text>
+              <Text style={[styles.secondaryText, { color: colors.buttonText }]}>View job</Text>
             </Pressable>
             <Pressable
               style={[styles.dangerButton, { backgroundColor: colors.background, borderColor: colors.error }]}

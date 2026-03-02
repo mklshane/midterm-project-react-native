@@ -19,7 +19,9 @@ export type ThemeColors = {
   highlight: string;
   gradientStart: string;
   gradientEnd: string;
-  saveIcon: string; 
+  saveIcon: string;
+  buttonPrimary: string;
+  buttonText: string;
 };
 
 export const themeColors: Record<ThemeMode, ThemeColors> = {
@@ -42,7 +44,9 @@ export const themeColors: Record<ThemeMode, ThemeColors> = {
     highlight: "#F4F4F5",
     gradientStart: "#18181B",
     gradientEnd: "#18181B",
-    saveIcon: "#EAB308", 
+    saveIcon: "#EAB308",
+    buttonPrimary: "#2563EB",
+    buttonText: "#FFFFFF",
   },
   dark: {
     background: "#09090B",
@@ -63,7 +67,9 @@ export const themeColors: Record<ThemeMode, ThemeColors> = {
     highlight: "#27272A",
     gradientStart: "#FAFAFA",
     gradientEnd: "#FAFAFA",
-    saveIcon: "#FBBF24", 
+    saveIcon: "#FBBF24",
+    buttonPrimary: "#3B82F6",
+    buttonText: "#FFFFFF",
   },
 };
 

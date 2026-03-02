@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, FlatList, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -9,6 +9,7 @@ import { useSavedJobs } from "../../contexts/SavedJobContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import JobCard from "../../components/JobCard";
 import ThemeToggle from "../../components/Base/ThemeToggle";
+import DeleteConfirmModal from "../../components/AppliedJobs/DeleteConfirmModal";
 import { styles } from "./SavedJobs.styles";
 
 type Props = CompositeScreenProps<
@@ -17,8 +18,9 @@ type Props = CompositeScreenProps<
 >;
 
 const SavedJobsScreen: React.FC<Props> = ({ navigation }) => {
-  const { savedJobs } = useSavedJobs();
+  const { savedJobs, removeJob } = useSavedJobs();
   const { colors, isDarkMode, toggleTheme } = useTheme();
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -61,6 +63,7 @@ const SavedJobsScreen: React.FC<Props> = ({ navigation }) => {
                 fromSavedJobs: true,
               })
             }
+            onRemove={(guid) => setPendingRemoveId(guid)}
           />
         )}
         ListEmptyComponent={() => (
@@ -70,6 +73,20 @@ const SavedJobsScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
           </View>
         )}
+      />
+
+      <DeleteConfirmModal
+        visible={!!pendingRemoveId}
+        colors={colors}
+        title="Unsave this job?"
+        message="This will remove it from your saved list. You can always save it again later."
+        confirmLabel="Unsave"
+        icon="bookmark-outline"
+        onCancel={() => setPendingRemoveId(null)}
+        onConfirm={() => {
+          if (pendingRemoveId) removeJob(pendingRemoveId);
+          setPendingRemoveId(null);
+        }}
       />
     </SafeAreaView>
   );

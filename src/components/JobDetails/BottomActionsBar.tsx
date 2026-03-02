@@ -45,7 +45,7 @@ const BottomActionsBar: React.FC<Props> = ({ saved, colors, onSavePress, onApply
         style={[
           styles.applyButton,
           {
-            backgroundColor: applied ? colors.mutedText : colors.primary,
+            backgroundColor: applied ? colors.mutedText : colors.buttonPrimary,
             opacity: applied ? 0.5 : 1,
           },
         ]}
@@ -53,10 +53,10 @@ const BottomActionsBar: React.FC<Props> = ({ saved, colors, onSavePress, onApply
         <Ionicons
           name={applied ? "checkmark-circle" : "paper-plane"}
           size={18}
-          color={colors.background}
+          color={colors.buttonText}
           style={{ marginRight: 8 }}
         />
-        <Text style={[styles.applyText, { color: colors.background }]}>
+        <Text style={[styles.applyText, { color: colors.buttonText }]}>
           {applied ? "Applied" : "Apply Now"}
         </Text>
       </Pressable>

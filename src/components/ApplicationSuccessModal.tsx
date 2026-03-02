@@ -21,8 +21,8 @@ const ApplicationSuccessModal: React.FC<Props> = ({ visible, title, message, col
           </View>
           <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
           <Text style={[styles.message, { color: colors.mutedText }]}>{message}</Text>
-          <Pressable style={[styles.button, { backgroundColor: colors.primary }]} onPress={onConfirm}>
-            <Text style={[styles.buttonText, { color: colors.background }]}>Okay</Text>
+          <Pressable style={[styles.button, { backgroundColor: colors.buttonPrimary }]} onPress={onConfirm}>
+            <Text style={[styles.buttonText, { color: colors.buttonText }]}>Okay</Text>
           </Pressable>
         </View>
       </View>

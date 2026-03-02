@@ -15,15 +15,22 @@ import { Ionicons } from "@expo/vector-icons";
 interface JobCardProps {
   job: Job;
   onPress?: (event: GestureResponderEvent) => void;
+  onRemove?: (jobGuid: string) => void;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
+const JobCard: React.FC<JobCardProps> = ({ job, onPress, onRemove }) => {
   const { colors } = useTheme();
   const { saveJob, removeJob, isJobSaved } = useSavedJobs();
   const saved = isJobSaved(job.guid);
 
   const handleSavePress = () => {
-    saved ? removeJob(job.guid) : saveJob(job);
+    if (saved && onRemove) {
+      onRemove(job.guid);
+    } else if (saved) {
+      removeJob(job.guid);
+    } else {
+      saveJob(job);
+    }
   };
 
   const getSalaryString = () => {

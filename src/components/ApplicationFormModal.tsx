@@ -284,12 +284,12 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                 ) : null}
 
                 <Pressable
-                  style={[styles.submitButton, { backgroundColor: colors.primary, opacity: isSubmitting ? 0.8 : 1 }]}
+                  style={[styles.submitButton, { backgroundColor: colors.buttonPrimary, opacity: isSubmitting ? 0.8 : 1 }]}
                   onPress={handleSubmit as () => void}
                   disabled={isSubmitting}
                 >
-                  <Ionicons name="send" size={18} color={colors.background} style={{ marginRight: 8 }} />
-                  <Text style={[styles.submitButtonText, { color: colors.background }]}>Confirm Application</Text>
+                  <Ionicons name="send" size={18} color={colors.buttonText} style={{ marginRight: 8 }} />
+                  <Text style={[styles.submitButtonText, { color: colors.buttonText }]}>Confirm Application</Text>
                 </Pressable>
               </View>
             )}
