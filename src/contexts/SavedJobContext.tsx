@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Job } from "./JobsContext";
+import { Job } from "../types";
 import { useTheme } from "./ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 

@@ -7,7 +7,7 @@ import {
   StyleSheet,
   GestureResponderEvent,
 } from "react-native";
-import { Job } from "../contexts/JobsContext";
+import { Job } from "../types";
 import { useSavedJobs } from "../contexts/SavedJobContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useApplications } from "../contexts/ApplicationsContext";

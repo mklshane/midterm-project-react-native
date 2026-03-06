@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Job } from "../../contexts/JobsContext";
+import { Job } from "../../types";
 import { ThemeColors } from "../../styles/colors";
 
 interface Props {

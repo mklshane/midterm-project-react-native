@@ -17,7 +17,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { Formik, FormikProps } from "formik";
 import * as Yup from "yup";
 import ApplicationSuccessModal from "./ApplicationSuccessModal";
-import { Job } from "../contexts/JobsContext";
+import { Job } from "../types";
 import { useApplications } from "../contexts/ApplicationsContext";
 
 interface ApplicationFormModalProps {

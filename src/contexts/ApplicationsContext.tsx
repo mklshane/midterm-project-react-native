@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Application } from "../types";
-import { Job } from "./JobsContext";
+import { Application, Job } from "../types";
 
 const STORAGE_KEY = "applied-jobs";
 

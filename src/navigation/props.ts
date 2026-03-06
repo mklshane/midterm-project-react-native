@@ -1,5 +1,5 @@
 import { NavigationProp, NavigatorScreenParams } from "@react-navigation/native";
-import { Job } from "../contexts/JobsContext";
+import { Job } from "../types";
 
 export type RootTabParamList = {
   Find: undefined;

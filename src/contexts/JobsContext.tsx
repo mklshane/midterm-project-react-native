@@ -10,30 +10,7 @@ import React, {
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "react-native-get-random-values";
-
-export interface ApiJob {
-  guid: string; 
-  title: string;
-  mainCategory: string;
-  companyName: string;
-  companyLogo: string | null;
-  jobType: string;
-  workModel: string;
-  seniorityLevel: string;
-  minSalary: number | null;
-  maxSalary: number | null;
-  currency: string;
-  locations: string[];
-  tags: string[];
-  description: string;
-  pubDate: number;
-  expiryDate: number;
-  applicationLink: string;
-}
-
-export interface Job extends ApiJob {
-  id: string; 
-}
+import { ApiJob, Job } from "../types";
 
 interface JobsApiResponse {
   jobs: ApiJob[];
