@@ -20,7 +20,10 @@ import LogisticsRow from "../../components/JobDetails/LogisticsRow";
 import DescriptionSection from "../../components/JobDetails/DescriptionSection";
 import BottomActionsBar from "../../components/JobDetails/BottomActionsBar";
 import ThemeToggle from "../../components/Base/ThemeToggle";
+import MetaChip from "../../components/Base/MetaChip";
+import SectionHeader from "../../components/Base/SectionHeader";
 import DeleteConfirmModal from "../../components/AppliedJobs/DeleteConfirmModal";
+import { formatSalary, formatEpochDate } from "../../utils/formatting";
 import { styles } from "./JobDetails.styles";
 
 type Props = NativeStackScreenProps<RootStackParamList, "JobDetails">;
@@ -82,32 +85,9 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     navigation.reset({ index: 0, routes: [{ name: "Tabs", params: { screen: "Find" } }] });
   };
 
-  const getSalaryString = () => {
-    if (!job.minSalary && !job.maxSalary) return null;
-    const formatter = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: job.currency || "USD",
-      maximumFractionDigits: 0,
-    });
-    if (job.minSalary && job.maxSalary) {
-      return `${formatter.format(job.minSalary)} - ${formatter.format(job.maxSalary)}`;
-    }
-    return formatter.format((job.minSalary || job.maxSalary) as number);
-  };
-
-  const salary = getSalaryString();
-
-  const formatDate = (value?: number) => {
-    if (!value) return "N/A";
-    return new Date(value * 1000).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const postedOn = formatDate(job.pubDate);
-  const expiresOn = formatDate(job.expiryDate);
+  const salary = formatSalary(job);
+  const postedOn = formatEpochDate(job.pubDate);
+  const expiresOn = formatEpochDate(job.expiryDate);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -155,35 +135,14 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           <View style={styles.metaRow}>
-            <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <View style={[styles.metaIconBox, { backgroundColor: colors.primaryLight }]}>
-                <Ionicons name="calendar-outline" size={14} color={colors.primary} />
-              </View>
-              <View>
-                <Text style={[styles.metaLabel, { color: colors.mutedText }]}>Posted</Text>
-                <Text style={[styles.metaValue, { color: colors.text }]}>{postedOn}</Text>
-              </View>
-            </View>
-            <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <View style={[styles.metaIconBox, { backgroundColor: colors.primaryLight }]}>
-                <Ionicons name="time-outline" size={14} color={colors.primary} />
-              </View>
-              <View>
-                <Text style={[styles.metaLabel, { color: colors.mutedText }]}>Expires</Text>
-                <Text style={[styles.metaValue, { color: colors.text }]}>{expiresOn}</Text>
-              </View>
-            </View>
+            <MetaChip icon="calendar-outline" label="Posted" value={postedOn} colors={colors} />
+            <MetaChip icon="time-outline" label="Expires" value={expiresOn} colors={colors} />
           </View>
         </View>
 
         {/* ── Compensation & Role ── */}
         <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.sectionHeader}>
-            <View style={[styles.sectionIconBox, { backgroundColor: colors.primaryLight }]}>
-              <Ionicons name="stats-chart" size={16} color={colors.primary} />
-            </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Compensation & Role</Text>
-          </View>
+          <SectionHeader icon="stats-chart" title="Compensation & Role" colors={colors} />
           <LogisticsRow
             job={job}
             salary={salary}
@@ -197,12 +156,7 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         {/* ── Skills & Tools ── */}
         {job.tags?.length > 0 ? (
           <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIconBox, { backgroundColor: colors.primaryLight }]}>
-                <Ionicons name="code-slash" size={16} color={colors.primary} />
-              </View>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Skills & Tools</Text>
-            </View>
+            <SectionHeader icon="code-slash" title="Skills & Tools" colors={colors} />
             <TagsList tags={job.tags} colors={colors} compact />
           </View>
         ) : null}

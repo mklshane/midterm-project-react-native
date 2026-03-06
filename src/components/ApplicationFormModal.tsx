@@ -17,6 +17,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { Formik, FormikProps } from "formik";
 import * as Yup from "yup";
 import ApplicationSuccessModal from "./ApplicationSuccessModal";
+import DeleteConfirmModal from "./AppliedJobs/DeleteConfirmModal";
 import { Job } from "../types";
 import { useApplications } from "../contexts/ApplicationsContext";
 
@@ -62,16 +63,7 @@ const validationSchema = Yup.object().shape({
     .required("Email is required"),
   contact: Yup.string()
     .trim()
-    .matches(/^[\d\s\-()+]+$/, "Contact must contain only digits and valid symbols (+, -, parentheses)")
-    .test(
-      "digit-count",
-      "Contact must have between 7 and 15 digits",
-      (value) => {
-        if (!value) return false;
-        const digitCount = value.replace(/\D/g, "").length;
-        return digitCount >= 7 && digitCount <= 15;
-      },
-    )
+    .matches(/^09\d{9}$/, "Contact must be 11 digits starting with 09")
     .required("Contact number is required"),
   coverLetter: Yup.string()
     .trim()
@@ -117,7 +109,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   const handleConfirmDiscard = useCallback(() => {
     formikRef.current?.resetForm();
     setShowDiscardConfirm(false);
-    closeFormModal();
+    setTimeout(closeFormModal, 300);
   }, [closeFormModal]);
 
   const captureFieldPosition = useCallback((key: string, event: LayoutChangeEvent) => {
@@ -333,7 +325,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                     <TextInput
                       style={[styles.inputInner, { color: colors.text }]}
                       placeholderTextColor={colors.mutedText}
-                      placeholder="+639123456789"
+                      placeholder="09123456789"
                       keyboardType="phone-pad"
                       onChangeText={handleChange("contact")}
                       onBlur={handleBlur("contact")}
@@ -413,31 +405,16 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
         }}
       />
 
-      {showDiscardConfirm ? (
-        <View style={styles.confirmOverlay}>
-          <Pressable style={styles.confirmOverlayTapArea} onPress={() => setShowDiscardConfirm(false)} />
-          <View style={[styles.confirmCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={[styles.confirmIconWrap, { backgroundColor: colors.error + "15" }]}>
-              <Ionicons name="alert-circle-outline" size={36} color={colors.error} />
-            </View>
-
-            <Text style={[styles.confirmTitle, { color: colors.text }]}>Discard this application?</Text>
-            <Text style={[styles.confirmSubtitle, { color: colors.mutedText }]}>You have unsaved changes in the form. If you continue, your entered details will be lost.</Text>
-
-            <View style={styles.confirmActions}>
-              <Pressable
-                style={[styles.confirmCancelButton, { backgroundColor: colors.background, borderColor: colors.border }]}
-                onPress={() => setShowDiscardConfirm(false)}
-              >
-                <Text style={[styles.confirmCancelText, { color: colors.text }]}>Cancel</Text>
-              </Pressable>
-              <Pressable style={[styles.confirmDiscardButton, { backgroundColor: colors.error }]} onPress={handleConfirmDiscard}>
-                <Text style={styles.confirmDiscardText}>Discard</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      ) : null}
+      <DeleteConfirmModal
+        visible={showDiscardConfirm}
+        colors={colors}
+        title="Discard this application?"
+        message="You have unsaved changes in the form. If you continue, your entered details will be lost."
+        confirmLabel="Discard"
+        icon="alert-circle-outline"
+        onCancel={() => setShowDiscardConfirm(false)}
+        onConfirm={handleConfirmDiscard}
+      />
     </Modal>
   );
 };
@@ -557,73 +534,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   errorText: { fontSize: 12, fontWeight: "600", marginTop: 6 },
-  confirmOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  confirmOverlayTapArea: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  confirmCard: {
-    width: "100%",
-    borderRadius: 20,
-    padding: 24,
-    borderWidth: 1,
-    alignItems: "center",
-    gap: 10,
-  },
-  confirmIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
-  },
-  confirmTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-    textAlign: "center",
-  },
-  confirmSubtitle: {
-    fontSize: 14,
-    fontWeight: "500",
-    lineHeight: 21,
-    textAlign: "center",
-  },
-  confirmActions: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 8,
-    width: "100%",
-  },
-  confirmCancelButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-  },
-  confirmCancelText: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  confirmDiscardButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  confirmDiscardText: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
 });
 
 export default ApplicationFormModal;

@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, Pressable, GestureResponderEvent, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Application } from "../../types";
 import { ThemeColors } from "../../styles/colors";
+import { cardStyles } from "../../styles/globalStyles";
 import { useSavedJobs } from "../../contexts/SavedJobContext";
+import { getDaysAgoFromMs, formatMsDate } from "../../utils/formatting";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 
 interface Props {
   application: Application;
@@ -12,28 +15,17 @@ interface Props {
   onDelete: () => void;
 }
 
-const formatDate = (ts: number) => {
-  const date = new Date(ts);
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-};
-
-const getDaysAgo = (ts: number) => {
-  const days = Math.floor((Date.now() - ts) / 86_400_000);
-  if (days === 0) return "Today";
-  if (days === 1) return "1d ago";
-  return `${days}d ago`;
-};
-
 const AppliedJobCard: React.FC<Props> = ({ application, colors, onPress, onDelete }) => {
   const { job } = application;
   const { saveJob, removeJob, isJobSaved } = useSavedJobs();
   const saved = isJobSaved(job.guid);
+  const [showUnsaveConfirm, setShowUnsaveConfirm] = useState(false);
 
   const handleSavePress = (event: GestureResponderEvent) => {
     event.stopPropagation();
 
     if (saved) {
-      removeJob(job.guid);
+      setShowUnsaveConfirm(true);
       return;
     }
 
@@ -65,7 +57,7 @@ const AppliedJobCard: React.FC<Props> = ({ application, colors, onPress, onDelet
               {job.companyName}
             </Text>
             <Text style={[styles.timeAgo, { color: colors.mutedText }]}>
-              {getDaysAgo(application.submittedAt)}
+              {getDaysAgoFromMs(application.submittedAt)}
             </Text>
           </View>
         </View>
@@ -91,7 +83,7 @@ const AppliedJobCard: React.FC<Props> = ({ application, colors, onPress, onDelet
           <Text style={[styles.tagText, { color: colors.success }]}>Applied</Text>
         </View>
         <View style={[styles.tagBadge, { borderColor: colors.border }]}>
-          <Text style={[styles.tagText, { color: colors.text }]}>{formatDate(application.submittedAt)}</Text>
+          <Text style={[styles.tagText, { color: colors.text }]}>{formatMsDate(application.submittedAt, false)}</Text>
         </View>
         {job.jobType && (
           <View style={[styles.tagBadge, { borderColor: colors.border }]}>
@@ -119,90 +111,26 @@ const AppliedJobCard: React.FC<Props> = ({ application, colors, onPress, onDelet
           <Text style={[styles.cancelText, { color: colors.error }]}>Cancel</Text>
         </Pressable>
       </View>
+
+      <DeleteConfirmModal
+        visible={showUnsaveConfirm}
+        colors={colors}
+        title="Unsave this job?"
+        message="This will remove the job from your saved list. You can save it again anytime."
+        confirmLabel="Unsave"
+        icon="bookmark-outline"
+        onCancel={() => setShowUnsaveConfirm(false)}
+        onConfirm={() => {
+          setShowUnsaveConfirm(false);
+          removeJob(job.guid);
+        }}
+      />
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 8,
-    borderWidth: 1.5,
-    padding: 20,
-    marginBottom: 16,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  companyInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  logoBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    borderWidth: 1,
-    marginRight: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  logo: { width: "100%", height: "100%" },
-  fallbackLogo: { fontSize: 16, fontWeight: "800", textTransform: "uppercase" },
-  companyName: {
-    fontSize: 15,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  timeAgo: { fontSize: 13, marginTop: 2 },
-  title: {
-    fontSize: 22,
-    fontWeight: "800",
-    lineHeight: 28,
-    letterSpacing: -0.5,
-    marginBottom: 12,
-  },
-  tagsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 16,
-  },
-  tagBadge: {
-    borderWidth: 1,
-    borderRadius: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  tagText: {
-    fontSize: 11,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  divider: {
-    height: 1,
-    width: "100%",
-    marginBottom: 16,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-  },
-  logistics: {
-    flex: 1,
-    marginRight: 16,
-  },
-  detailText: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
+  ...cardStyles,
   cancelButton: {
     borderRadius: 8,
     paddingHorizontal: 12,

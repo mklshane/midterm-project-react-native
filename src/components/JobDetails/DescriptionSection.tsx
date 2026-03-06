@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import RenderHtml from "react-native-render-html";
 import { ThemeColors } from "../../styles/colors";
+import SectionHeader from "../Base/SectionHeader";
 
 interface Props {
   description: string;
@@ -108,12 +109,7 @@ const DescriptionSection: React.FC<Props> = ({ description, contentWidth, colors
 
   return (
     <View style={styles.descriptionContainer}>
-      <View style={styles.sectionTitleRow}>
-        <View style={[styles.sectionIconBox, { backgroundColor: colors.primaryLight }]}>
-          <Ionicons name="document-text" size={16} color={colors.primary} />
-        </View>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>About This Role</Text>
-      </View>
+      <SectionHeader icon="document-text" title="About This Role" colors={colors} />
 
       {parsedSections.length > 0 ? (
         <View style={styles.sectionsWrap}>

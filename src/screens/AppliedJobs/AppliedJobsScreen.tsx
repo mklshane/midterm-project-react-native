@@ -51,7 +51,6 @@ const AppliedJobsScreen: React.FC<Props> = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={renderHeader}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
         renderItem={({ item }) => (
           <AppliedJobCard
             application={item}

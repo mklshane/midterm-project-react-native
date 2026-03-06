@@ -53,7 +53,6 @@ const SavedJobsScreen: React.FC<Props> = ({ navigation }) => {
         keyExtractor={(item) => item.guid}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={renderHeader}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
         renderItem={({ item }) => (
           <JobCard
             job={item}

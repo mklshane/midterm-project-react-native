@@ -9,9 +9,10 @@ import { useTheme } from "../../contexts/ThemeContext";
 import TagsList from "../../components/JobDetails/TagsList";
 import LogisticsRow from "../../components/JobDetails/LogisticsRow";
 import DeleteConfirmModal from "../../components/AppliedJobs/DeleteConfirmModal";
+import MetaChip from "../../components/Base/MetaChip";
+import SectionHeader from "../../components/Base/SectionHeader";
+import { formatSalary, formatMsDate } from "../../utils/formatting";
 import { styles } from "./ApplicationDetails.styles";
-
-const formatDate = (ts: number) => new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 
 const ApplicationDetailsScreen: React.FC<NativeStackScreenProps<RootStackParamList, "ApplicationDetails">> = ({ route, navigation }) => {
   const { applicationId } = route.params;
@@ -44,12 +45,7 @@ const ApplicationDetailsScreen: React.FC<NativeStackScreenProps<RootStackParamLi
   }
 
   const { job } = application;
-  const salary = (() => {
-    if (!job.minSalary && !job.maxSalary) return null;
-    const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: job.currency || "USD", maximumFractionDigits: 0 });
-    if (job.minSalary && job.maxSalary) return `${fmt.format(job.minSalary)} - ${fmt.format(job.maxSalary)}`;
-    return fmt.format((job.minSalary || job.maxSalary) as number);
-  })();
+  const salary = formatSalary(job);
 
   const onCancelApplication = () => setConfirmVisible(true);
 
@@ -72,24 +68,8 @@ const ApplicationDetailsScreen: React.FC<NativeStackScreenProps<RootStackParamLi
           <Text style={[styles.company, { color: colors.mutedText }]}>{job.companyName}</Text>
 
           <View style={styles.metaRow}>
-            <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <View style={[styles.metaIconBox, { backgroundColor: colors.primaryLight }]}>
-                <Ionicons name="calendar-outline" size={14} color={colors.primary} />
-              </View>
-              <View>
-                <Text style={[styles.metaLabel, { color: colors.mutedText }]}>Submitted</Text>
-                <Text style={[styles.metaValue, { color: colors.text }]}>{formatDate(application.submittedAt)}</Text>
-              </View>
-            </View>
-            <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <View style={[styles.metaIconBox, { backgroundColor: colors.primaryLight }]}>
-                <Ionicons name="person-outline" size={14} color={colors.primary} />
-              </View>
-              <View>
-                <Text style={[styles.metaLabel, { color: colors.mutedText }]}>Applicant</Text>
-                <Text style={[styles.metaValue, { color: colors.text }]} numberOfLines={1}>{application.name}</Text>
-              </View>
-            </View>
+            <MetaChip icon="calendar-outline" label="Submitted" value={formatMsDate(application.submittedAt)} colors={colors} />
+            <MetaChip icon="person-outline" label="Applicant" value={application.name} colors={colors} numberOfLines={1} />
           </View>
 
           <LogisticsRow job={job} salary={salary} colors={colors} scrollable={false} />
@@ -97,12 +77,7 @@ const ApplicationDetailsScreen: React.FC<NativeStackScreenProps<RootStackParamLi
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>          
-          <View style={styles.sectionHeader}>
-            <View style={[styles.sectionIconBox, { backgroundColor: colors.primaryLight }]}>
-              <Ionicons name="document-text-outline" size={16} color={colors.primary} />
-            </View>
-            <Text style={[styles.subheading, { color: colors.text }]}>Application details</Text>
-          </View>
+          <SectionHeader icon="document-text-outline" title="Application details" colors={colors} />
 
           <View style={[styles.sectionCard, { backgroundColor: colors.background, borderColor: colors.border }]}>            
             <View style={styles.fieldRow}>

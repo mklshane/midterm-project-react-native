@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { RootStackParamList, RootTabParamList } from "../../navigation/props";
 import { useJobs } from "../../contexts/JobsContext";
 import { Job } from "../../types";
+import { getUniqueJobValues } from "../../utils/formatting";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useSavedJobs } from "../../contexts/SavedJobContext";
 import JobCard from "../../components/JobCard";
@@ -44,37 +45,10 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
     setFilters({ salarySort: null, jobType: null, workModel: null, seniorityLevel: null });
   };
 
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    jobs.forEach((job) => {
-      if (job.mainCategory) cats.add(job.mainCategory);
-    });
-    return Array.from(cats).slice(0, 5);
-  }, [jobs]);
-
-  const jobTypeOptions = useMemo(() => {
-    const values = new Set<string>();
-    jobs.forEach((job) => {
-      if (job.jobType) values.add(job.jobType);
-    });
-    return Array.from(values);
-  }, [jobs]);
-
-  const workModelOptions = useMemo(() => {
-    const values = new Set<string>();
-    jobs.forEach((job) => {
-      if (job.workModel) values.add(job.workModel);
-    });
-    return Array.from(values);
-  }, [jobs]);
-
-  const seniorityOptions = useMemo(() => {
-    const values = new Set<string>();
-    jobs.forEach((job) => {
-      if (job.seniorityLevel) values.add(job.seniorityLevel);
-    });
-    return Array.from(values);
-  }, [jobs]);
+  const categories = useMemo(() => getUniqueJobValues(jobs, "mainCategory").slice(0, 5), [jobs]);
+  const jobTypeOptions = useMemo(() => getUniqueJobValues(jobs, "jobType"), [jobs]);
+  const workModelOptions = useMemo(() => getUniqueJobValues(jobs, "workModel"), [jobs]);
+  const seniorityOptions = useMemo(() => getUniqueJobValues(jobs, "seniorityLevel"), [jobs]);
 
   const hasActiveFilters =
     filters.salarySort !== null ||
