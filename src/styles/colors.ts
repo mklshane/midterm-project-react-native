@@ -69,7 +69,7 @@ export const themeColors: Record<ThemeMode, ThemeColors> = {
     gradientEnd: "#FAFAFA",
     saveIcon: "#FBBF24",
     buttonPrimary: "#3B82F6",
-    buttonText: "#FFFFFF",
+    buttonText: "#000000",
   },
 };
 

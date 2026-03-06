@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../contexts/ThemeContext";
-import { Formik } from "formik";
+import { Formik, FormikProps } from "formik";
 import * as Yup from "yup";
 import ApplicationSuccessModal from "./ApplicationSuccessModal";
 import { Job } from "../contexts/JobsContext";
@@ -35,6 +35,16 @@ type FormValues = {
   contact: string;
   coverLetter: string;
 };
+
+const EMPTY_FORM_VALUES: FormValues = {
+  name: "",
+  email: "",
+  contact: "",
+  coverLetter: "",
+};
+
+const hasFormData = (values: FormValues) =>
+  Object.values(values).some((value) => value.trim().length > 0);
 
 const validationSchema = Yup.object().shape({
   name: Yup.string()
@@ -74,10 +84,34 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   const { colors } = useTheme();
   const { addApplication } = useApplications();
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const fieldPositions = useRef<Record<string, number>>({});
+  const formikRef = useRef<FormikProps<FormValues>>(null);
+
+  const closeFormModal = useCallback(() => {
+    setFocusedField(null);
+    Keyboard.dismiss();
+    onClose();
+  }, [onClose]);
+
+  const handleAttemptClose = useCallback(() => {
+    const currentValues = formikRef.current?.values ?? EMPTY_FORM_VALUES;
+    if (hasFormData(currentValues)) {
+      setShowDiscardConfirm(true);
+      return;
+    }
+
+    closeFormModal();
+  }, [closeFormModal]);
+
+  const handleConfirmDiscard = useCallback(() => {
+    formikRef.current?.resetForm();
+    setShowDiscardConfirm(false);
+    closeFormModal();
+  }, [closeFormModal]);
 
   const captureFieldPosition = useCallback((key: string, event: LayoutChangeEvent) => {
     fieldPositions.current[key] = event.nativeEvent.layout.y;
@@ -131,12 +165,19 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (visible) return;
+
+    setShowDiscardConfirm(false);
+    setFocusedField(null);
+  }, [visible]);
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
       presentationStyle="pageSheet" // Native bottom-sheet look on iOS
-      onRequestClose={onClose}
+      onRequestClose={handleAttemptClose}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -150,7 +191,8 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
           keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
         >
           <Formik<FormValues>
-            initialValues={{ name: "", email: "", contact: "", coverLetter: "" }}
+            initialValues={EMPTY_FORM_VALUES}
+            innerRef={formikRef}
             validationSchema={validationSchema}
             onSubmit={(values, helpers) => {
               helpers.setSubmitting(false);
@@ -176,7 +218,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                     <Text style={[styles.modalSubtitle, { color: colors.mutedText }]}>Complete the form to apply at {companyName}</Text>
                   </View>
                   <Pressable
-                    onPress={onClose}
+                    onPress={handleAttemptClose}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <Ionicons name="close" size={24} color={colors.text} />
@@ -284,7 +326,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                     <TextInput
                       style={[styles.inputInner, { color: colors.text }]}
                       placeholderTextColor={colors.mutedText}
-                      placeholder="+1 (555) 000-0000"
+                      placeholder="+639123456789"
                       keyboardType="phone-pad"
                       onChangeText={handleChange("contact")}
                       onBlur={handleBlur("contact")}
@@ -359,10 +401,36 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
         colors={colors}
         onConfirm={() => {
           setShowSuccess(false);
-          onClose();
+          closeFormModal();
           onSuccess();
         }}
       />
+
+      {showDiscardConfirm ? (
+        <View style={styles.confirmOverlay}>
+          <Pressable style={styles.confirmOverlayTapArea} onPress={() => setShowDiscardConfirm(false)} />
+          <View style={[styles.confirmCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.confirmIconWrap, { backgroundColor: colors.error + "15" }]}>
+              <Ionicons name="alert-circle-outline" size={36} color={colors.error} />
+            </View>
+
+            <Text style={[styles.confirmTitle, { color: colors.text }]}>Discard this application?</Text>
+            <Text style={[styles.confirmSubtitle, { color: colors.mutedText }]}>You have unsaved changes in the form. If you continue, your entered details will be lost.</Text>
+
+            <View style={styles.confirmActions}>
+              <Pressable
+                style={[styles.confirmCancelButton, { backgroundColor: colors.background, borderColor: colors.border }]}
+                onPress={() => setShowDiscardConfirm(false)}
+              >
+                <Text style={[styles.confirmCancelText, { color: colors.text }]}>Cancel</Text>
+              </Pressable>
+              <Pressable style={[styles.confirmDiscardButton, { backgroundColor: colors.error }]} onPress={handleConfirmDiscard}>
+                <Text style={styles.confirmDiscardText}>Discard</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      ) : null}
     </Modal>
   );
 };
@@ -482,6 +550,73 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   errorText: { fontSize: 12, fontWeight: "600", marginTop: 6 },
+  confirmOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  confirmOverlayTapArea: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  confirmCard: {
+    width: "100%",
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    alignItems: "center",
+    gap: 10,
+  },
+  confirmIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  confirmTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  confirmSubtitle: {
+    fontSize: 14,
+    fontWeight: "500",
+    lineHeight: 21,
+    textAlign: "center",
+  },
+  confirmActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 8,
+    width: "100%",
+  },
+  confirmCancelButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  confirmCancelText: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  confirmDiscardButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  confirmDiscardText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
 });
 
 export default ApplicationFormModal;
