@@ -4,8 +4,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { Job } from "../../contexts/JobsContext";
 import { ThemeColors } from "../../styles/colors";
 
-
-
 interface Props {
   job: Job;
   salary: string | null;
@@ -53,12 +51,6 @@ const LogisticsRow: React.FC<Props> = ({
       icon: "briefcase" as const,
       label: "Job type",
       value: job.jobType,
-    },
-    {
-      key: "seniority",
-      icon: "ribbon" as const,
-      label: "Seniority",
-      value: job.seniorityLevel,
     },
   ];
 

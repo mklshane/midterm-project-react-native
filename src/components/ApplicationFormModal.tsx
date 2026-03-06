@@ -52,7 +52,14 @@ const validationSchema = Yup.object().shape({
     .min(2, "Name is too short")
     .matches(/^[a-zA-Z\s\-'.]+$/, "Name must only contain letters, spaces, hyphens, or apostrophes")
     .required("Full name is required"),
-  email: Yup.string().email("Invalid email format").required("Email is required"),
+  email: Yup.string()
+    .trim()
+    .email("Invalid email format")
+    .matches(
+      /^[^\s@]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/,
+      "Email must include a valid domain (e.g., example.com)",
+    )
+    .required("Email is required"),
   contact: Yup.string()
     .trim()
     .matches(/^[\d\s\-()+]+$/, "Contact must contain only digits and valid symbols (+, -, parentheses)")
