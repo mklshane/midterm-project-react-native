@@ -63,11 +63,11 @@ const validationSchema = Yup.object().shape({
     .required("Email is required"),
   contact: Yup.string()
     .trim()
-    .matches(/^09\d{9}$/, "Contact must be 11 digits starting with 09")
+    .matches(/^(09\d{9}|63\d{10})$/, "Contact must be 11 digits starting with 09 or 12 digits starting with 63")
     .required("Contact number is required"),
   coverLetter: Yup.string()
     .trim()
-    .min(30, "Cover letter is too short")
+    .min(20, "Must be at least 20 characters")
     .max(500, "Max 500 characters")
     .required("Cover letter is required"),
 });
