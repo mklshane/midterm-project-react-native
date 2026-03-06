@@ -8,10 +8,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { RootStackParamList, RootTabParamList } from "../../navigation/props";
 import { useJobs, Job } from "../../contexts/JobsContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useSavedJobs } from "../../contexts/SavedJobContext";
 import JobCard from "../../components/JobCard";
 import HeaderSection from "../../components/JobFinder/HeaderSection";
 import EmptyState from "../../components/JobFinder/EmptyState";
 import FilterModal, { JobFilters } from "../../components/JobFinder/FilterModal";
+import DeleteConfirmModal from "../../components/AppliedJobs/DeleteConfirmModal";
 import { styles } from "./JobFinder.styles";
 
 type Props = CompositeScreenProps<
@@ -22,10 +24,12 @@ type Props = CompositeScreenProps<
 const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
   const { jobs, loading, loadingMore, error, totalCount, hasMore, loadMoreJobs } = useJobs();
   const { colors, isDarkMode, toggleTheme } = useTheme();
+  const { removeJob } = useSavedJobs();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
   const [filters, setFilters] = useState<JobFilters>({
     salarySort: null,
     jobType: null,
@@ -218,7 +222,11 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
           />
         }
         renderItem={({ item }) => (
-          <JobCard job={item} onPress={() => navigation.navigate("JobDetails", { job: item })} />
+          <JobCard
+            job={item}
+            onPress={() => navigation.navigate("JobDetails", { job: item })}
+            onRemove={(guid) => setPendingRemoveId(guid)}
+          />
         )}
         ListEmptyComponent={() => (
           <EmptyState loading={loading} error={error} colors={colors} />
@@ -252,6 +260,20 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
         onClose={() => setIsFilterModalVisible(false)}
         onChange={setFilters}
         onReset={resetFilters}
+      />
+
+      <DeleteConfirmModal
+        visible={!!pendingRemoveId}
+        colors={colors}
+        title="Unsave this job?"
+        message="This will remove it from your saved list. You can always save it again later."
+        confirmLabel="Unsave"
+        icon="bookmark-outline"
+        onCancel={() => setPendingRemoveId(null)}
+        onConfirm={() => {
+          if (pendingRemoveId) removeJob(pendingRemoveId);
+          setPendingRemoveId(null);
+        }}
       />
     </SafeAreaView>
   );

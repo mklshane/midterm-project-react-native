@@ -20,6 +20,7 @@ import LogisticsRow from "../../components/JobDetails/LogisticsRow";
 import DescriptionSection from "../../components/JobDetails/DescriptionSection";
 import BottomActionsBar from "../../components/JobDetails/BottomActionsBar";
 import ThemeToggle from "../../components/Base/ThemeToggle";
+import DeleteConfirmModal from "../../components/AppliedJobs/DeleteConfirmModal";
 import { styles } from "./JobDetails.styles";
 
 type Props = NativeStackScreenProps<RootStackParamList, "JobDetails">;
@@ -34,6 +35,7 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const applied = isApplied(job.guid);
 
   const [isFormVisible, setFormVisible] = useState(false);
+  const [isUnsaveConfirmVisible, setIsUnsaveConfirmVisible] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -44,7 +46,12 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [navigation, colors]);
 
   const handleSavePress = () => {
-    saved ? removeJob(job.guid) : saveJob(job);
+    if (saved) {
+      setIsUnsaveConfirmVisible(true);
+      return;
+    }
+
+    saveJob(job);
   };
 
   const handleApplyPress = () => {
@@ -226,6 +233,20 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         jobTitle={job.title}
         companyName={job.companyName}
         onSuccess={handleApplicationSuccess}
+      />
+
+      <DeleteConfirmModal
+        visible={isUnsaveConfirmVisible}
+        colors={colors}
+        title="Unsave this job?"
+        message="This will remove it from your saved list. You can always save it again later."
+        confirmLabel="Unsave"
+        icon="bookmark-outline"
+        onCancel={() => setIsUnsaveConfirmVisible(false)}
+        onConfirm={() => {
+          removeJob(job.guid);
+          setIsUnsaveConfirmVisible(false);
+        }}
       />
     </View>
   );

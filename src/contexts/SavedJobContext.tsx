@@ -81,7 +81,6 @@ export const SavedJobsProvider = ({ children }: { children: ReactNode }) => {
     }, 2000);
   };
 
-  // FIXED: Changed j.id to j.guid to match your API
   const isJobSaved = useCallback(
     (jobId: string) => savedJobs.some((j) => j.guid === jobId),
     [savedJobs],
@@ -89,7 +88,6 @@ export const SavedJobsProvider = ({ children }: { children: ReactNode }) => {
 
   const saveJob = useCallback((job: Job) => {
     setSavedJobs((prev) => {
-      // FIXED: Changed j.id to j.guid
       const exists = prev.some((j) => j.guid === job.guid);
       if (exists) return prev;
       return [job, ...prev];
@@ -98,7 +96,6 @@ export const SavedJobsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const removeJob = useCallback((jobId: string) => {
-    // FIXED: Changed j.id to j.guid
     setSavedJobs((prev) => prev.filter((j) => j.guid !== jobId));
     triggerToast("Job removed", "bookmark-outline");
   }, []);
@@ -123,7 +120,6 @@ export const SavedJobsProvider = ({ children }: { children: ReactNode }) => {
     <SavedJobsContext.Provider value={value}>
       {children}
 
-      {/* The Minimalist Toast Overlay */}
       {toastMessage && (
         <View style={styles.toastContainer} pointerEvents="none">
           <View style={[styles.toastBox, { backgroundColor: colors.text }]}>

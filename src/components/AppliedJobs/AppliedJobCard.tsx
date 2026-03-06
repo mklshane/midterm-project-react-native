@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, GestureResponderEvent, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Application } from "../../types";
 import { ThemeColors } from "../../styles/colors";
+import { useSavedJobs } from "../../contexts/SavedJobContext";
 
 interface Props {
   application: Application;
@@ -25,6 +26,19 @@ const getDaysAgo = (ts: number) => {
 
 const AppliedJobCard: React.FC<Props> = ({ application, colors, onPress, onDelete }) => {
   const { job } = application;
+  const { saveJob, removeJob, isJobSaved } = useSavedJobs();
+  const saved = isJobSaved(job.guid);
+
+  const handleSavePress = (event: GestureResponderEvent) => {
+    event.stopPropagation();
+
+    if (saved) {
+      removeJob(job.guid);
+      return;
+    }
+
+    saveJob(job);
+  };
 
   return (
     <Pressable
@@ -34,9 +48,17 @@ const AppliedJobCard: React.FC<Props> = ({ application, colors, onPress, onDelet
       <View style={styles.header}>
         <View style={styles.companyInfo}>
           <View style={[styles.logoBox, { borderColor: colors.border }]}>
-            <Text style={[styles.fallbackLogo, { color: colors.text }]}>
-              {job.companyName.charAt(0)}
-            </Text>
+            {job.companyLogo ? (
+              <Image
+                source={{ uri: job.companyLogo }}
+                style={styles.logo}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={[styles.fallbackLogo, { color: colors.text }]}>
+                {job.companyName.charAt(0)}
+              </Text>
+            )}
           </View>
           <View>
             <Text style={[styles.companyName, { color: colors.text }]} numberOfLines={1}>
@@ -47,6 +69,17 @@ const AppliedJobCard: React.FC<Props> = ({ application, colors, onPress, onDelet
             </Text>
           </View>
         </View>
+
+        <Pressable
+          onPress={handleSavePress}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        >
+          <Ionicons
+            name={saved ? "bookmark" : "bookmark-outline"}
+            size={22}
+            color={saved ? colors.saveIcon : colors.mutedText}
+          />
+        </Pressable>
       </View>
 
       <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
@@ -117,6 +150,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     overflow: "hidden",
   },
+  logo: { width: "100%", height: "100%" },
   fallbackLogo: { fontSize: 16, fontWeight: "800", textTransform: "uppercase" },
   companyName: {
     fontSize: 15,
