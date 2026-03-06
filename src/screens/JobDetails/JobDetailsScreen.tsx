@@ -95,7 +95,6 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Hero Card ── */}
         <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.topRow}>
             <View style={[styles.pretitleBadge, { backgroundColor: colors.primaryLight }]}>
@@ -140,7 +139,6 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           </View>
         </View>
 
-        {/* ── Compensation & Role ── */}
         <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <SectionHeader icon="stats-chart" title="Compensation & Role" colors={colors} />
           <LogisticsRow
@@ -153,7 +151,6 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           />
         </View>
 
-        {/* ── Skills & Tools ── */}
         {job.tags?.length > 0 ? (
           <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <SectionHeader icon="code-slash" title="Skills & Tools" colors={colors} />
@@ -161,7 +158,6 @@ const JobDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           </View>
         ) : null}
 
-        {/* ── Description ── */}
         <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <DescriptionSection
             description={job.description}

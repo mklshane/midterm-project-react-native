@@ -16,8 +16,10 @@ type ParsedSection = {
   items: string[];
 };
 
+// Remove HTML tags before text normalization.
 const stripHtmlTags = (value: string) => value.replace(/<[^>]*>/g, " ");
 
+// Decode common HTML entities from API content.
 const decodeEntities = (value: string) =>
   value
     .replace(/&amp;/g, "&")
@@ -27,15 +29,18 @@ const decodeEntities = (value: string) =>
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ");
 
+// Strip emoji glyphs for cleaner long-form text rendering.
 const stripEmojis = (value: string) =>
   value.replace(
     /[\u{1F300}-\u{1FAFF}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{27BF}\u{FE0F}]/gu,
     "",
   );
 
+// Standardize API text by decoding entities, removing tags, and collapsing whitespace.
 const normalizeText = (value: string) =>
   stripEmojis(decodeEntities(stripHtmlTags(value))).replace(/\s+/g, " ").trim();
 
+// Parse <h3> + <ul><li> sections into structured cards for consistent display.
 const parseSectionsFromHtml = (html: string): ParsedSection[] => {
   const sections: ParsedSection[] = [];
   const sectionPattern = /<h3[^>]*>(.*?)<\/h3>[\s\S]*?<ul[^>]*>([\s\S]*?)<\/ul>/gi;
@@ -58,11 +63,11 @@ const parseSectionsFromHtml = (html: string): ParsedSection[] => {
   return sections;
 };
 
-
-
 const DescriptionSection: React.FC<Props> = ({ description, contentWidth, colors }) => {
+  // Prefer structured sections when the HTML matches expected heading/list patterns.
   const parsedSections = useMemo(() => parseSectionsFromHtml(description || ""), [description]);
 
+  // Keep a sanitized fallback for raw HTML rendering when parsing fails.
   const cleanedFallbackHtml = useMemo(() => {
     const safeHtml = description || "<p>No description provided.</p>";
     return stripEmojis(safeHtml);

@@ -90,12 +90,14 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   const fieldPositions = useRef<Record<string, number>>({});
   const formikRef = useRef<FormikProps<FormValues>>(null);
 
+  // Close the form and reset focus-related UI state.
   const closeFormModal = useCallback(() => {
     setFocusedField(null);
     Keyboard.dismiss();
     onClose();
   }, [onClose]);
 
+  // Prompt for discard only when any field already has user input.
   const handleAttemptClose = useCallback(() => {
     const currentValues = formikRef.current?.values ?? EMPTY_FORM_VALUES;
     if (hasFormData(currentValues)) {
@@ -106,16 +108,19 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     closeFormModal();
   }, [closeFormModal]);
 
+  // Reset form state before dismissing the modal after confirm-discard.
   const handleConfirmDiscard = useCallback(() => {
     formikRef.current?.resetForm();
     setShowDiscardConfirm(false);
     setTimeout(closeFormModal, 300);
   }, [closeFormModal]);
 
+  // Cache Y offsets so focused fields can be scrolled into view.
   const captureFieldPosition = useCallback((key: string, event: LayoutChangeEvent) => {
     fieldPositions.current[key] = event.nativeEvent.layout.y;
   }, []);
 
+  // Scroll the current field above the keyboard with a small visual buffer.
   const scrollToField = useCallback((key: string, extraOffset: number = 0) => {
     const targetY = fieldPositions.current[key];
     if (typeof targetY !== "number") return;
@@ -128,6 +133,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     });
   }, []);
 
+  // Track focused input and trigger immediate scroll positioning.
   const handleFieldFocus = useCallback(
     (key: string) => {
       setFocusedField(key);
@@ -136,6 +142,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     [scrollToField],
   );
 
+  // Re-adjust scroll after keyboard animation so focused field stays visible.
   useEffect(() => {
     if (!focusedField || keyboardHeight <= 0) return;
 
@@ -146,6 +153,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     return () => clearTimeout(timeout);
   }, [focusedField, keyboardHeight, scrollToField]);
 
+  // Listen to keyboard show/hide events to keep layout and scroll offsets in sync.
   useEffect(() => {
     const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
     const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";

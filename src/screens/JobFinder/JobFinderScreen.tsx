@@ -41,6 +41,7 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
   const onEndReachedCalledDuringMomentum = useRef(true);
   const listRef = useRef<FlatList<Job>>(null);
 
+  // Reset all advanced filter selections at once.
   const resetFilters = () => {
     setFilters({ salarySort: null, jobType: null, workModel: null, seniorityLevel: null });
   };
@@ -56,6 +57,7 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
     filters.workModel !== null ||
     filters.seniorityLevel !== null;
 
+  // Build filter chips shown under the search header.
   const activeFilters = useMemo(() => {
     const chips: Array<{ key: string; label: string }> = [];
 
@@ -81,6 +83,7 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
     return chips;
   }, [selectedCategory, filters]);
 
+  // Remove one active filter chip without affecting other filter values.
   const handleRemoveFilter = (key: string) => {
     if (key === "category") {
       setSelectedCategory(null);
@@ -95,12 +98,14 @@ const JobFinderScreen: React.FC<Props> = ({ navigation }) => {
 
   const isFiltering = Boolean(search || selectedCategory || hasActiveFilters);
 
+  // Choose the best available salary field for sorting comparisons.
   const getComparableSalary = (job: Job) => {
     if (typeof job.maxSalary === "number") return job.maxSalary;
     if (typeof job.minSalary === "number") return job.minSalary;
     return null;
   };
 
+  // Apply text/category filters first, then optional salary sort on the filtered set.
   const filteredJobs = useMemo(() => {
     let filtered = jobs;
     if (search) {
