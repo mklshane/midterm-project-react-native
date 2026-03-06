@@ -44,6 +44,7 @@ export const SavedJobsProvider = ({ children }: { children: ReactNode }) => {
     "bookmark",
   );
 
+  // Hydrate saved jobs from local storage when the provider mounts.
   useEffect(() => {
     const load = async () => {
       try {
@@ -69,7 +70,7 @@ export const SavedJobsProvider = ({ children }: { children: ReactNode }) => {
     );
   }, [savedJobs, hydrated]);
 
-  // Helper to show the 2-second toast
+  // Show a short feedback toast for save/remove actions.
   const triggerToast = (
     message: string,
     icon: "bookmark" | "bookmark-outline",
@@ -81,11 +82,13 @@ export const SavedJobsProvider = ({ children }: { children: ReactNode }) => {
     }, 2000);
   };
 
+  // Check whether a job is already bookmarked.
   const isJobSaved = useCallback(
     (jobId: string) => savedJobs.some((j) => j.guid === jobId),
     [savedJobs],
   );
 
+  // Add a job to the saved list if it is not already present.
   const saveJob = useCallback((job: Job) => {
     setSavedJobs((prev) => {
       const exists = prev.some((j) => j.guid === job.guid);
@@ -95,11 +98,13 @@ export const SavedJobsProvider = ({ children }: { children: ReactNode }) => {
     triggerToast("Job saved to your list", "bookmark");
   }, []);
 
+  // Remove a saved job by guid.
   const removeJob = useCallback((jobId: string) => {
     setSavedJobs((prev) => prev.filter((j) => j.guid !== jobId));
     triggerToast("Job removed", "bookmark-outline");
   }, []);
 
+  // Clear all saved jobs.
   const clearSavedJobs = useCallback(() => {
     setSavedJobs([]);
   }, []);

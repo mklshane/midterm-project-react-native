@@ -27,6 +27,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<ThemeMode>("light");
   const [hydrated, setHydrated] = useState(false);
 
+  // Load the last selected theme from local storage on mount.
   useEffect(() => {
     const load = async () => {
       try {
@@ -41,10 +42,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     load();
   }, []);
 
+  // Toggle between light and dark theme modes.
   const toggleTheme = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
+  // Persist the selected theme after hydration completes.
   useEffect(() => {
     if (!hydrated) return;
     AsyncStorage.setItem("theme-mode", theme).catch(() => {});

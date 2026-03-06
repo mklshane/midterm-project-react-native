@@ -26,6 +26,7 @@ export const ApplicationsProvider = ({ children }: { children: ReactNode }) => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
+  // Hydrate applications from local storage when the provider mounts.
   useEffect(() => {
     const load = async () => {
       try {
@@ -42,16 +43,19 @@ export const ApplicationsProvider = ({ children }: { children: ReactNode }) => {
     load();
   }, []);
 
+  // Persist application updates after initial hydration.
   useEffect(() => {
     if (!hydrated) return;
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(applications)).catch(() => {});
   }, [applications, hydrated]);
 
+  // Check whether a job has already been applied for.
   const isApplied = useCallback(
     (id: string) => applications.some((app) => app.id === id),
     [applications],
   );
 
+  // Create or replace an application using the job guid as the id.
   const addApplication = useCallback(
     (job: Job, form: Omit<Application, "id" | "job" | "submittedAt">) => {
       setApplications((prev) => {
@@ -76,10 +80,12 @@ export const ApplicationsProvider = ({ children }: { children: ReactNode }) => {
     [],
   );
 
+  // Remove an application by id.
   const removeApplication = useCallback((id: string) => {
     setApplications((prev) => prev.filter((a) => a.id !== id));
   }, []);
 
+  // Clear all applications.
   const clearApplications = useCallback(() => setApplications([]), []);
 
   const value = useMemo(

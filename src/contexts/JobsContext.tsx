@@ -53,6 +53,7 @@ export const JobsProvider = ({ children }: { children: ReactNode }) => {
   const [hasMore, setHasMore] = useState(true);
   const [nextOffset, setNextOffset] = useState(0);
 
+  // Fetch one page of jobs from the API using the current offset.
   const fetchJobsPage = useCallback(async (offset: number) => {
     const { data } = await axios.get<JobsApiResponse>(API_URL, {
       params: { offset, limit: PAGE_LIMIT },
@@ -60,6 +61,7 @@ export const JobsProvider = ({ children }: { children: ReactNode }) => {
     return data;
   }, []);
 
+  // Merge incoming jobs by guid and keep stable local ids for existing items.
   const mergeJobs = useCallback((existingJobs: Job[], incomingApiJobs: ApiJob[]): Job[] => {
     const jobsByGuid = new Map(existingJobs.map((job) => [job.guid, job]));
 
@@ -74,6 +76,7 @@ export const JobsProvider = ({ children }: { children: ReactNode }) => {
     return Array.from(jobsByGuid.values());
   }, []);
 
+  // Reload jobs from the first page and reset pagination state.
   const refetchJobs = useCallback(async () => {
     try {
       setLoading(true);
@@ -104,6 +107,7 @@ export const JobsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [fetchJobsPage]);
 
+  // Load the next page and append unique jobs to the existing list.
   const loadMoreJobs = useCallback(async () => {
     if (loading || loadingMore || !hasMore) return;
 
@@ -134,6 +138,7 @@ export const JobsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [fetchJobsPage, hasMore, loading, loadingMore, mergeJobs, nextOffset, totalCount]);
 
+  // Initial fetch when the provider mounts.
   useEffect(() => {
     refetchJobs();
   }, [refetchJobs]);
